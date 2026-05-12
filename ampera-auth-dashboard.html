@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Ampera Raya — PNL System</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg:       #07090D;
+    --surface:  #0F1218;
+    --card:     #141820;
+    --border:   #1E2530;
+    --accent:   #E8453C;
+    --gold:     #F5A623;
+    --green:    #2ECC71;
+    --red:      #E74C3C;
+    --blue:     #3498DB;
+    --text:     #E8EDF5;
+    --muted:    #5A6478;
+    --subtle:   #2A3040;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LOGIN SCREEN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+  }
+
+  #login-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(228,69,60,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .login-logo .crab {
+    font-size: 42px;
+    display: block;
+    margin-bottom: 12px;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .login-logo h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+
+  .login-logo p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .login-box label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .login-box input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .login-box input:focus { border-color: var(--accent); }
+
+  .btn-login {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+
+  .btn-login:hover { opacity: 0.9; }
+  .btn-login:active { transform: scale(0.98); }
+
+  .login-error {
+    background: rgba(231,76,60,0.1);
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #E74C3C;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ── MAIN APP ── */
+  #app { display: none; }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo .crab { font-size: 24px; }
+
+  .sidebar-logo h2 {
+    font-size: 15px;
+    font-weight: 800;
+    margin-top: 6px;
+    line-height: 1.2;
+  }
+
+  .sidebar-logo p {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 16px 12px;
+    overflow-y: auto;
+  }
+
+  .nav-section-title {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 8px;
+    margin: 16px 0 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--subtle); color: var(--text); }
+  .nav-item.active { background: rgba(228,69,60,0.15); color: var(--accent); }
+  .nav-item .icon { width: 18px; text-align: center; font-size: 15px; }
+
+  .sidebar-user {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--card);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .user-chip:hover { background: var(--subtle); }
+
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .user-role { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
+
+  .logout-btn {
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.15s;
+    background: none;
+    border: none;
+    padding: 4px;
+  }
+  .logout-btn:hover { color: var(--accent); }
+
+  /* Main content */
+  .main {
+    margin-left: 220px;
+    min-height: 100vh;
+    padding: 32px;
+    background: var(--bg);
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  .page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .month-badge {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .kpi-card:hover { border-color: var(--subtle); }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card.income::before { background: var(--green); }
+  .kpi-card.expense::before { background: var(--red); }
+  .kpi-card.profit::before { background: var(--gold); }
+  .kpi-card.margin::before { background: var(--blue); }
+
+  .kpi-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .kpi-icon {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-size: 22px;
+    opacity: 0.15;
+  }
+
+  /* Charts row */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title span.dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  canvas { max-height: 220px; }
+
+  /* Branch table */
+  .branch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .branch-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .branch-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(30,37,48,0.5);
+    vertical-align: middle;
+  }
+
+  .branch-table tr:last-child td { border-bottom: none; }
+
+  .branch-table tr:hover td { background: rgba(30,37,48,0.4); }
+
+  .branch-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+  }
+
+  .profit-bar-wrap {
+    width: 120px;
+    height: 4px;
+    background: var(--subtle);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .profit-bar { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.5px;
+  }
+
+  .badge.positive { background: rgba(46,204,113,0.12); color: var(--green); }
+  .badge.negative { background: rgba(231,76,60,0.12); color: var(--red); }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    width: fit-content;
+  }
+
+  .tab-btn {
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--muted);
+    transition: all 0.15s;
+    font-family: 'Syne', sans-serif;
+    letter-spacing: 0.3px;
+  }
+
+  .tab-btn.active {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+
+  /* Section view */
+  .section { display: none; }
+  .section.visible { display: block; }
+
+  /* Access denied */
+  .access-denied {
+    text-align: center;
+    padding: 80px 40px;
+    color: var(--muted);
+  }
+
+  .access-denied .icon { font-size: 48px; margin-bottom: 16px; }
+  .access-denied h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .access-denied p { font-size: 14px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; padding: 20px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+  }
+
+  /* Utility */
+  .green { color: var(--green); }
+  .red   { color: var(--red); }
+  .gold  { color: var(--gold); }
+  .mono  { font-family: 'JetBrains Mono', monospace; }
+  .fade  { animation: fadeIn 0.4s ease both; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box fade">
+    <div class="login-logo">
+      <span class="crab">🦞</span>
+      <h1>Ampera Raya Global</h1>
+      <p>PNL System · v1.0</p>
+    </div>
+    <div class="login-error" id="login-error">⛔ Email atau password tidak sah.</div>
+    <label>Email</label>
+    <input type="email" id="inp-email" placeholder="nama@ampera.com" autocomplete="username"/>
+    <label>Password</label>
+    <input type="password" id="inp-pw" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="btn-login" onclick="doLogin()">Log Masuk →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="crab">🦞</div>
+      <h2>Ampera Raya</h2>
+      <p>PNL System</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">
+        <span class="icon">📊</span> Overview
+      </div>
+      <div id="nav-company" class="nav-item" onclick="showSection('company')" style="display:none">
+        <span class="icon">🏢</span> Management Co.
+      </div>
+
+      <div class="nav-section-title">Cabang</div>
+      <div class="nav-item" id="nav-kw"    onclick="showSection('kw')"    style="display:none"><span class="icon">🔴</span> Kota Warisan</div>
+      <div class="nav-item" id="nav-kjg"   onclick="showSection('kjg')"   style="display:none"><span class="icon">🟢</span> Kajang</div>
+      <div class="nav-item" id="nav-s13"   onclick="showSection('s13')"   style="display:none"><span class="icon">🔵</span> Seksyen 13</div>
+      <div class="nav-item" id="nav-s7"    onclick="showSection('s7')"    style="display:none"><span class="icon">🟠</span> Seksyen 7</div>
+      <div class="nav-item" id="nav-klts"  onclick="showSection('klts')"  style="display:none"><span class="icon">🟡</span> KLTS</div>
+      <div class="nav-item" id="nav-dmnsr" onclick="showSection('dmnsr')" style="display:none"><span class="icon">🟣</span> Damansara</div>
+    </nav>
+    <div class="sidebar-user">
+      <div class="user-chip">
+        <div class="user-avatar" id="s-avatar"></div>
+        <div class="user-info">
+          <div class="user-name" id="s-name"></div>
+          <div class="user-role" id="s-role"></div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Log Keluar">↩</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div class="section visible fade" id="sec-overview">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard PNL</div>
+          <div class="page-subtitle">Ringkasan kewangan semua entiti</div>
+        </div>
+        <div class="month-badge" id="month-label"></div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card income">
+          <div class="kpi-label">Gross Income</div>
+          <div class="kpi-value green" id="kpi-income">—</div>
+          <div class="kpi-sub">Semua cabang</div>
+          <div class="kpi-icon">💰</div>
+        </div>
+        <div class="kpi-card expense">
+          <div class="kpi-label">Total Expenses</div>
+          <div class="kpi-value red" id="kpi-expense">—</div>
+          <div class="kpi-sub">Semua cabang</div>
+          <div class="kpi-icon">📤</div>
+        </div>
+        <div class="kpi-card profit">
+          <div class="kpi-label">Net Profit</div>
+          <div class="kpi-value gold" id="kpi-profit">—</div>
+          <div class="kpi-sub">Semua cabang</div>
+          <div class="kpi-icon">📈</div>
+        </div>
+        <div class="kpi-card margin">
+          <div class="kpi-label">Avg Margin</div>
+          <div class="kpi-value" style="color:var(--blue)" id="kpi-margin">—</div>
+          <div class="kpi-sub">Keseluruhan</div>
+          <div class="kpi-icon">📉</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title"><span class="dot"></span> Net Profit per Cabang</div>
+          <canvas id="chart-branch"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot"></span> Income vs Expense</div>
+          <canvas id="chart-compare"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="dot"></span> Ringkasan Semua Cabang</div>
+        <table class="branch-table" id="branch-table">
+          <thead>
+            <tr>
+              <th>Cabang</th>
+              <th>Gross Income</th>
+              <th>Total Expenses</th>
+              <th>Net Profit</th>
+              <th>Margin</th>
+              <th>Status</th>
+              <th>Bar</th>
+            </tr>
+          </thead>
+          <tbody id="branch-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BRANCH SECTIONS (generated dynamically) -->
+    <div class="section fade" id="sec-company">
+      <div class="page-header">
+        <div><div class="page-title">🏢 Management Company</div><div class="page-subtitle">Laporan PNL Pengurusan</div></div>
+        <div class="month-badge" id="month-label-company"></div>
+      </div>
+      <div id="branch-detail-company"></div>
+    </div>
+
+    <div class="section fade" id="sec-kw">
+      <div class="page-header">
+        <div><div class="page-title">🔴 Kota Warisan</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-kw"></div>
+    </div>
+
+    <div class="section fade" id="sec-kjg">
+      <div class="page-header">
+        <div><div class="page-title">🟢 Kajang</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-kjg"></div>
+    </div>
+
+    <div class="section fade" id="sec-s13">
+      <div class="page-header">
+        <div><div class="page-title">🔵 Seksyen 13</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-s13"></div>
+    </div>
+
+    <div class="section fade" id="sec-s7">
+      <div class="page-header">
+        <div><div class="page-title">🟠 Seksyen 7</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-s7"></div>
+    </div>
+
+    <div class="section fade" id="sec-klts">
+      <div class="page-header">
+        <div><div class="page-title">🟡 KLTS</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-klts"></div>
+    </div>
+
+    <div class="section fade" id="sec-dmnsr">
+      <div class="page-header">
+        <div><div class="page-title">🟣 Damansara</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
+      </div>
+      <div id="branch-detail-dmnsr"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// USER DATABASE — gantikan dengan data staf sebenar Ampera
+// Role: ceo | director | finance | manager
+// Branch: null (akses semua) | "KW" | "S13" | "KJG" | "KLTS" | "S7" | "DMNSR"
+// ═══════════════════════════════════════════════════════════
+const USERS_DB = [
+  { id:1,  email:"ceo@ampera.com",       name:"CEO Ampera",       role:"ceo",      branch:null,    password:"Nasipadang2024",  avatar:"👑" },
+  { id:2,  email:"ainun@ampera.com",     name:"Ainun Rochman",    role:"director", branch:null,    password:"GantiPW2!",  avatar:"💼" },
+  { id:3,  email:"baizura@ampera.com",   name:"Nur Baizura",      role:"director", branch:null,    password:"GantiPW3!",  avatar:"💼" },
+  { id:4,  email:"farhan@ampera.com",    name:"Farhan Akmal",     role:"director", branch:null,    password:"GantiPW4!",  avatar:"💼" },
+  { id:5,  email:"baqir@ampera.com",     name:"Muhammad Baqir",   role:"finance",  branch:null,    password:"GantiPW5!",  avatar:"📊" },
+  { id:6,  email:"ikmal@ampera.com",     name:"Ikmal Syahmi",     role:"finance",  branch:null,    password:"GantiPW6!",  avatar:"📊" },
+  { id:7,  email:"nana@ampera.com",      name:"Nana Suherman",    role:"finance",  branch:null,    password:"GantiPW7!",  avatar:"📊" },
+  { id:8,  email:"adawiyah@ampera.com",  name:"Adawiyah",         role:"finance",  branch:null,    password:"GantiPW8!",  avatar:"📊" },
+  { id:9,  email:"mgr.kw@ampera.com",    name:"Manager KW",       role:"manager",  branch:"KW",    password:"GantiPW9!",  avatar:"🏪" },
+  { id:10, email:"mgr.s13@ampera.com",   name:"Manager S13",      role:"manager",  branch:"S13",   password:"GantiPW10!", avatar:"🏪" },
+  { id:11, email:"mgr.kjg@ampera.com",   name:"Manager Kajang",   role:"manager",  branch:"KJG",   password:"GantiPW11!", avatar:"🏪" },
+  { id:12, email:"mgr.klts@ampera.com",  name:"Manager KLTS",     role:"manager",  branch:"KLTS",  password:"GantiPW12!", avatar:"🏪" },
+  { id:13, email:"mgr.s7@ampera.com",    name:"Manager S7",       role:"manager",  branch:"S7",    password:"GantiPW13!", avatar:"🏪" },
+  { id:14, email:"mgr.dmnsr@ampera.com", name:"Manager Damansara",role:"manager",  branch:"DMNSR", password:"GantiPW14!", avatar:"🏪" },
+];
+
+// ═══════════════════════════════════════════════════════════
+// SAMPLE PNL DATA — gantikan dengan data dari Google Sheets API
+// ═══════════════════════════════════════════════════════════
+const PNL_DATA = {
+  month: "Mac 2026",
+  branches: [
+    { key:"company", name:"Management Co.", color:"#E8453C", income:320000, expense:185000, categories:[
+      {name:"Director Salary",  amount:85000},
+      {name:"Management Salary",amount:45000},
+      {name:"Rental Fee",       amount:22000},
+      {name:"Caruman",          amount:18000},
+      {name:"Operational",      amount:15000},
+    ]},
+    { key:"kw",      name:"Kota Warisan",   color:"#E74C3C", income:280000, expense:191760, categories:[
+      {name:"Operational",      amount:62000},
+      {name:"Salary",           amount:78000},
+      {name:"Rental Fee",       amount:28000},
+      {name:"Utility",          amount:15000},
+      {name:"Lain-lain",        amount:8760},
+    ]},
+    { key:"kjg",     name:"Kajang",         color:"#2ECC71", income:198000, expense:158743, categories:[
+      {name:"Operational",      amount:48000},
+      {name:"Salary",           amount:65000},
+      {name:"Rental Fee",       amount:22000},
+      {name:"Utility",          amount:12000},
+      {name:"Lain-lain",        amount:11743},
+    ]},
+    { key:"s13",     name:"Seksyen 13",     color:"#3498DB", income:245000, expense:178500, categories:[
+      {name:"Operational",      amount:55000},
+      {name:"Salary",           amount:72000},
+      {name:"Rental Fee",       amount:25000},
+      {name:"Utility",          amount:14000},
+      {name:"Lain-lain",        amount:12500},
+    ]},
+    { key:"s7",      name:"Seksyen 7",      color:"#E67E22", income:167000, expense:134200, categories:[
+      {name:"Operational",      amount:38000},
+      {name:"Salary",           amount:58000},
+      {name:"Rental Fee",       amount:20000},
+      {name:"Utility",          amount:10500},
+      {name:"Lain-lain",        amount:7700},
+    ]},
+    { key:"klts",    name:"KLTS",           color:"#F1C40F", income:312000, expense:224800, categories:[
+      {name:"Operational",      amount:72000},
+      {name:"Salary",           amount:88000},
+      {name:"Rental Fee",       amount:32000},
+      {name:"Utility",          amount:18500},
+      {name:"Lain-lain",        amount:14300},
+    ]},
+    { key:"dmnsr",   name:"Damansara",      color:"#9B59B6", income:195000, expense:152300, categories:[
+      {name:"Operational",      amount:45000},
+      {name:"Salary",           amount:62000},
+      {name:"Rental Fee",       amount:24000},
+      {name:"Utility",          amount:13000},
+      {name:"Lain-lain",        amount:8300},
+    ]},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
+let currentUser = null;
+let charts = {};
+
+function doLogin() {
+  const email = document.getElementById('inp-email').value.trim().toLowerCase();
+  const pw    = document.getElementById('inp-pw').value;
+  const user  = USERS_DB.find(u => u.email.toLowerCase() === email && u.password === pw);
+  const errEl = document.getElementById('login-error');
+
+  if (!user) {
+    errEl.style.display = 'block';
+    document.getElementById('inp-pw').value = '';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  currentUser = user;
+  initApp();
+}
+
+document.getElementById('inp-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+document.getElementById('inp-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('inp-pw').focus();
+});
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('inp-email').value = '';
+  document.getElementById('inp-pw').value = '';
+  // destroy charts
+  Object.values(charts).forEach(c => c && c.destroy());
+  charts = {};
+}
+
+// ═══════════════════════════════════════════════════════════
+// APP INIT
+// ═══════════════════════════════════════════════════════════
+function canSeeAll() {
+  return ['ceo','director','finance'].includes(currentUser.role);
+}
+
+function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Sidebar user info
+  document.getElementById('s-avatar').textContent = currentUser.avatar;
+  document.getElementById('s-name').textContent   = currentUser.name;
+  document.getElementById('s-role').textContent   = currentUser.role.toUpperCase();
+
+  // Month labels
+  document.getElementById('month-label').textContent = PNL_DATA.month;
+  document.getElementById('month-label-company').textContent = PNL_DATA.month;
+
+  // Show/hide nav items based on role
+  const full = canSeeAll();
+  document.getElementById('nav-company').style.display = full ? 'flex' : 'none';
+
+  const branchNavMap = {kw:'KW', kjg:'KJG', s13:'S13', s7:'S7', klts:'KLTS', dmnsr:'DMNSR'};
+  Object.entries(branchNavMap).forEach(([key, bKey]) => {
+    const el = document.getElementById('nav-' + key);
+    const show = full || (currentUser.branch === bKey);
+    el.style.display = show ? 'flex' : 'none';
+  });
+
+  // Build branch detail pages
+  PNL_DATA.branches.forEach(b => buildBranchDetail(b));
+
+  // Render overview
+  renderOverview();
+  showSection('overview');
+}
+
+// ═══════════════════════════════════════════════════════════
+// OVERVIEW
+// ═══════════════════════════════════════════════════════════
+function fmt(n) {
+  return 'RM ' + n.toLocaleString('ms-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function renderOverview() {
+  const branches = canSeeAll()
+    ? PNL_DATA.branches
+    : PNL_DATA.branches.filter(b => b.key === currentUser.branch.toLowerCase());
+
+  const totalIncome  = branches.reduce((s,b) => s + b.income, 0);
+  const totalExpense = branches.reduce((s,b) => s + b.expense, 0);
+  const totalProfit  = totalIncome - totalExpense;
+  const avgMargin    = totalIncome > 0 ? (totalProfit / totalIncome * 100) : 0;
+
+  document.getElementById('kpi-income').textContent  = fmt(totalIncome);
+  document.getElementById('kpi-expense').textContent = fmt(totalExpense);
+  document.getElementById('kpi-profit').textContent  = fmt(totalProfit);
+  document.getElementById('kpi-margin').textContent  = avgMargin.toFixed(1) + '%';
+
+  // Branch table
+  const maxProfit = Math.max(...branches.map(b => b.income - b.expense));
+  const tbody = document.getElementById('branch-tbody');
+  tbody.innerHTML = '';
+  branches.forEach(b => {
+    const profit = b.income - b.expense;
+    const margin = b.income > 0 ? (profit / b.income * 100) : 0;
+    const barPct = maxProfit > 0 ? Math.max(0, profit / maxProfit * 100) : 0;
+    const isPos  = profit >= 0;
+    tbody.innerHTML += `
+      <tr>
+        <td><span class="branch-dot" style="background:${b.color}"></span><strong>${b.name}</strong></td>
+        <td class="mono green">${fmt(b.income)}</td>
+        <td class="mono red">${fmt(b.expense)}</td>
+        <td class="mono ${isPos?'gold':'red'}">${fmt(profit)}</td>
+        <td class="mono">${margin.toFixed(1)}%</td>
+        <td><span class="badge ${isPos?'positive':'negative'}">${isPos?'▲ UNTUNG':'▼ RUGI'}</span></td>
+        <td>
+          <div class="profit-bar-wrap">
+            <div class="profit-bar" style="width:${barPct}%;background:${b.color}"></div>
+          </div>
+        </td>
+      </tr>`;
+  });
+
+  // Charts
+  setTimeout(() => {
+    renderBranchChart(branches);
+    renderCompareChart(branches);
+  }, 50);
+}
+
+function renderBranchChart(branches) {
+  const ctx = document.getElementById('chart-branch').getContext('2d');
+  if (charts.branch) charts.branch.destroy();
+  charts.branch = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: branches.map(b => b.name.replace(' ','\n')),
+      datasets: [{
+        label: 'Net Profit (RM)',
+        data: branches.map(b => b.income - b.expense),
+        backgroundColor: branches.map(b => b.color + 'CC'),
+        borderColor: branches.map(b => b.color),
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => 'RM ' + ctx.raw.toLocaleString('ms-MY', {minimumFractionDigits:2})
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#5A6478', font: {size:10} }, grid: { color: '#1E2530' } },
+        y: { ticks: { color: '#5A6478', callback: v => 'RM' + (v/1000).toFixed(0)+'k' }, grid: { color: '#1E2530' } }
+      }
+    }
+  });
+}
+
+function renderCompareChart(branches) {
+  const ctx = document.getElementById('chart-compare').getContext('2d');
+  if (charts.compare) charts.compare.destroy();
+  charts.compare = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: branches.map(b => b.name),
+      datasets: [
+        {
+          label: 'Income',
+          data: branches.map(b => b.income),
+          backgroundColor: 'rgba(46,204,113,0.6)',
+          borderColor: '#2ECC71',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: 'Expense',
+          data: branches.map(b => b.expense),
+          backgroundColor: 'rgba(231,76,60,0.6)',
+          borderColor: '#E74C3C',
+          borderWidth: 1,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#5A6478', font:{size:11} } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.label + ': RM ' + ctx.raw.toLocaleString('ms-MY', {minimumFractionDigits:2})
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#5A6478', font:{size:10} }, grid: { color: '#1E2530' } },
+        y: { ticks: { color: '#5A6478', callback: v => 'RM' + (v/1000).toFixed(0)+'k' }, grid: { color: '#1E2530' } }
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// BRANCH DETAIL
+// ═══════════════════════════════════════════════════════════
+function buildBranchDetail(b) {
+  const profit = b.income - b.expense;
+  const margin = b.income > 0 ? (profit / b.income * 100) : 0;
+  const isPos  = profit >= 0;
+
+  const catRows = b.categories.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td class="mono red">${fmt(c.amount)}</td>
+      <td>
+        <div class="profit-bar-wrap" style="width:160px">
+          <div class="profit-bar" style="width:${(c.amount/b.expense*100).toFixed(0)}%;background:${b.color}"></div>
+        </div>
+      </td>
+      <td class="mono" style="color:var(--muted)">${(c.amount/b.expense*100).toFixed(1)}%</td>
+    </tr>`).join('');
+
+  document.getElementById('branch-detail-' + b.key).innerHTML = `
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+      <div class="kpi-card income">
+        <div class="kpi-label">Gross Income</div>
+        <div class="kpi-value green">${fmt(b.income)}</div>
+        <div class="kpi-sub">Bulan ini</div>
+        <div class="kpi-icon">💰</div>
+      </div>
+      <div class="kpi-card expense">
+        <div class="kpi-label">Total Expenses</div>
+        <div class="kpi-value red">${fmt(b.expense)}</div>
+        <div class="kpi-sub">Bulan ini</div>
+        <div class="kpi-icon">📤</div>
+      </div>
+      <div class="kpi-card profit">
+        <div class="kpi-label">Net Profit · ${margin.toFixed(1)}% margin</div>
+        <div class="kpi-value ${isPos?'gold':'red'}">${fmt(profit)}</div>
+        <div class="kpi-sub"><span class="badge ${isPos?'positive':'negative'}">${isPos?'▲ UNTUNG':'▼ RUGI'}</span></div>
+        <div class="kpi-icon">📈</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:${b.color}"></span> Breakdown Perbelanjaan</div>
+      <table class="branch-table">
+        <thead><tr><th>Kategori</th><th>Jumlah</th><th>Bar</th><th>%</th></tr></thead>
+        <tbody>${catRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════
+function showSection(id) {
+  // Check access
+  if (!canSeeAll() && id !== 'overview') {
+    const branchMap = {kw:'KW', kjg:'KJG', s13:'S13', s7:'S7', klts:'KLTS', dmnsr:'DMNSR', company:'COMPANY'};
+    const target = branchMap[id];
+    if (target && currentUser.branch !== target) {
+      return; // silently deny
+    }
+  }
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const sec = document.getElementById('sec-' + id);
+  if (sec) sec.classList.add('visible');
+
+  const nav = document.getElementById('nav-' + id);
+  if (nav) nav.classList.add('active');
+}
+</script>
+</body>
+</html>
