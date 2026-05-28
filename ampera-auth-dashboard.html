@@ -1,726 +1,879 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Ampera Raya — PNL System</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ampera Raya Global — PNL Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
-
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  
   :root {
-    --bg:       #07090D;
-    --surface:  #0F1218;
-    --card:     #141820;
-    --border:   #1E2530;
-    --accent:   #E8453C;
-    --gold:     #F5A623;
-    --green:    #2ECC71;
-    --red:      #E74C3C;
-    --blue:     #3498DB;
-    --text:     #E8EDF5;
-    --muted:    #5A6478;
-    --subtle:   #2A3040;
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #1e1e2e;
+    --accent: #e8401a;
+    --accent2: #ff6b35;
+    --green: #00d97e;
+    --red: #ff4757;
+    --gold: #ffd700;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --card-glow: 0 0 30px rgba(232,64,26,0.08);
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
+    font-family: 'Space Grotesk', sans-serif;
     background: var(--bg);
     color: var(--text);
-    font-family: 'Syne', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* ── LOGIN SCREEN ── */
-  #login-screen {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  /* ---- Background ---- */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,64,26,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 90% 80%, rgba(255,107,53,0.04) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ---- LOGIN SCREEN ---- */
+  #loginScreen {
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
     background: var(--bg);
-    position: relative;
+    z-index:100;
   }
 
-  #login-screen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(228,69,60,0.12) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .login-box {
-    background: var(--card);
+  .login-card {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 48px 40px;
-    width: 100%;
-    max-width: 420px;
-    position: relative;
-    z-index: 1;
+    border-radius: 20px;
+    padding: 48px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), var(--card-glow);
   }
 
   .login-logo {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 32px;
   }
 
-  .login-logo .crab {
-    font-size: 42px;
-    display: block;
-    margin-bottom: 12px;
-    animation: float 3s ease-in-out infinite;
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
-  }
+  .login-logo .lobster { font-size: 48px; margin-bottom: 8px; }
 
   .login-logo h1 {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     color: var(--text);
   }
 
   .login-logo p {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 4px;
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
   }
 
-  .login-box label {
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
     display: block;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--muted);
     margin-bottom: 8px;
+    text-transform: uppercase;
   }
 
-  .login-box input {
+  .form-group input {
     width: 100%;
-    background: var(--surface);
+    background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 12px 16px;
     color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
     outline: none;
     transition: border-color 0.2s;
-    margin-bottom: 20px;
   }
 
-  .login-box input:focus { border-color: var(--accent); }
+  .form-group input:focus { border-color: var(--accent); }
 
   .btn-login {
     width: 100%;
     background: var(--accent);
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 14px;
-    color: #fff;
-    font-family: 'Syne', sans-serif;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 15px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: opacity 0.2s, transform 0.1s;
-    margin-top: 4px;
+    margin-top: 8px;
+    transition: background 0.2s, transform 0.1s;
   }
 
-  .btn-login:hover { opacity: 0.9; }
+  .btn-login:hover { background: var(--accent2); }
   .btn-login:active { transform: scale(0.98); }
 
-  .login-error {
-    background: rgba(231,76,60,0.1);
-    border: 1px solid rgba(231,76,60,0.3);
+  .error-msg {
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.3);
+    color: var(--red);
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 13px;
-    color: #E74C3C;
     margin-bottom: 16px;
     display: none;
   }
 
-  /* ── MAIN APP ── */
-  #app { display: none; }
-
-  /* Sidebar */
-  .sidebar {
-    position: fixed;
-    left: 0; top: 0; bottom: 0;
-    width: 220px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-  }
-
-  .sidebar-logo {
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-logo .crab { font-size: 24px; }
-
-  .sidebar-logo h2 {
-    font-size: 15px;
-    font-weight: 800;
-    margin-top: 6px;
-    line-height: 1.2;
-  }
-
-  .sidebar-logo p {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 1px;
-    margin-top: 2px;
-    text-transform: uppercase;
-  }
-
-  .sidebar-nav {
-    flex: 1;
-    padding: 16px 12px;
-    overflow-y: auto;
-  }
-
-  .nav-section-title {
-    font-size: 9px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    padding: 0 8px;
-    margin: 16px 0 6px;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--muted);
-    transition: all 0.15s;
-    margin-bottom: 2px;
-  }
-
-  .nav-item:hover { background: var(--subtle); color: var(--text); }
-  .nav-item.active { background: rgba(228,69,60,0.15); color: var(--accent); }
-  .nav-item .icon { width: 18px; text-align: center; font-size: 15px; }
-
-  .sidebar-user {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  .user-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px;
-    background: var(--card);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-
-  .user-chip:hover { background: var(--subtle); }
-
-  .user-avatar {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    background: var(--subtle);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-
-  .user-info { flex: 1; min-width: 0; }
-  .user-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-role { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
-
-  .logout-btn {
-    color: var(--muted);
-    font-size: 14px;
-    cursor: pointer;
-    transition: color 0.15s;
-    background: none;
-    border: none;
-    padding: 4px;
-  }
-  .logout-btn:hover { color: var(--accent); }
-
-  /* Main content */
-  .main {
-    margin-left: 220px;
-    min-height: 100vh;
-    padding: 32px;
-    background: var(--bg);
-  }
+  /* ---- MAIN DASHBOARD ---- */
+  #dashboard { display: none; position: relative; z-index: 1; }
 
   /* Header */
-  .page-header {
+  .header {
+    background: rgba(17,17,24,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 28px;
+    position: sticky; top: 0; z-index: 50;
   }
 
-  .page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
-  .page-subtitle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
 
-  .month-badge {
-    background: var(--card);
+  .header-left .logo-icon { font-size: 28px; }
+
+  .header-left h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .header-left span {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 6px 14px 6px 8px;
+    font-size: 13px;
+  }
+
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .btn-logout {
+    background: transparent;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 8px 16px;
-    font-family: 'JetBrains Mono', monospace;
+    padding: 6px 12px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 12px;
-    color: var(--gold);
-    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* Main content */
+  .main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* Generate PNL Section */
+  .generate-section {
+    background: linear-gradient(135deg, rgba(232,64,26,0.1), rgba(255,107,53,0.05));
+    border: 1px solid rgba(232,64,26,0.3);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
   }
 
-  /* KPI Cards */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-bottom: 28px;
+  .generate-info h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
   }
 
-  .kpi-card {
-    background: var(--card);
+  .generate-info p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .generate-info .last-updated {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-top: 6px;
+  }
+
+  .generate-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+  .btn-generate {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-generate:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-generate:active { transform: scale(0.97); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-refresh {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Sheets Config */
+  .sheets-config {
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
-  .kpi-card:hover { border-color: var(--subtle); }
+  .sheets-config label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
 
-  .kpi-card::before {
+  .sheets-config input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+  }
+  .sheets-config input:focus { border-color: var(--accent); }
+
+  .btn-save-config {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-save-config:hover { border-color: var(--green); color: var(--green); }
+
+  /* Status Banner */
+  .status-banner {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-banner.loading { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); display: flex; }
+  .status-banner.success { background: rgba(0,217,126,0.1); border: 1px solid rgba(0,217,126,0.3); color: var(--green); display: flex; }
+  .status-banner.error   { background: rgba(255,71,87,0.1);  border: 1px solid rgba(255,71,87,0.3);  color: var(--red);   display: flex; }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--card-glow);
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 2px;
+    background: var(--accent);
+    opacity: 0.6;
   }
 
-  .kpi-card.income::before { background: var(--green); }
-  .kpi-card.expense::before { background: var(--red); }
-  .kpi-card.profit::before { background: var(--gold); }
-  .kpi-card.margin::before { background: var(--blue); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.gold::before  { background: var(--gold); }
 
-  .kpi-label {
-    font-size: 10px;
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(232,64,26,0.3); }
+
+  .stat-label {
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
     color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     margin-bottom: 10px;
   }
 
-  .kpi-value {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
     line-height: 1;
   }
 
-  .kpi-sub {
-    font-size: 11px;
+  .stat-value.green { color: var(--green); }
+  .stat-value.gold  { color: var(--gold);  }
+  .stat-value.red   { color: var(--red);   }
+
+  .stat-sub {
+    font-size: 12px;
     color: var(--muted);
     margin-top: 6px;
-    font-family: 'JetBrains Mono', monospace;
   }
 
-  .kpi-icon {
-    position: absolute;
-    top: 16px; right: 16px;
-    font-size: 22px;
-    opacity: 0.15;
-  }
-
-  /* Charts row */
-  .charts-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-  }
-
-  .card-title {
-    font-size: 12px;
+  /* Section title */
+  .section-title {
+    font-size: 13px;
     font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
+    letter-spacing: 0.1em;
     color: var(--muted);
-    margin-bottom: 20px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .card-title span.dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    display: inline-block;
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
   }
 
-  canvas { max-height: 220px; }
+  /* Branch grid */
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
 
-  /* Branch table */
-  .branch-table {
+  .branch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .branch-card:hover {
+    border-color: rgba(232,64,26,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .branch-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .branch-name {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .branch-badge {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .badge-good { background: rgba(0,217,126,0.15); color: var(--green); }
+  .badge-avg  { background: rgba(255,215,0,0.15);  color: var(--gold);  }
+  .badge-low  { background: rgba(255,71,87,0.15);   color: var(--red);   }
+
+  .branch-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .metric { }
+
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .metric-value.green { color: var(--green); }
+  .metric-value.red   { color: var(--red);   }
+
+  /* Progress bar */
+  .margin-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  .margin-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 1s ease;
+  }
+
+  /* Company card */
+  .company-card {
+    background: linear-gradient(135deg, var(--surface), rgba(22,22,31,0.8));
+    border: 1px solid rgba(232,64,26,0.2);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .company-card::before {
+    content: '🦞 COMPANY';
+    position: absolute;
+    top: -2px; right: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface);
+    padding: 4px 10px;
+    border: 1px solid rgba(232,64,26,0.3);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .company-metric { }
+  .company-metric .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .company-metric .value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .company-metric .value.green { color: var(--green); }
+
+  /* Expense breakdown */
+  .expense-section { margin-bottom: 32px; }
+
+  .expense-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .expense-table table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
   }
 
-  .branch-table th {
+  .expense-table th {
+    background: var(--surface2);
+    padding: 12px 20px;
     text-align: left;
-    padding: 10px 14px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
     color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     border-bottom: 1px solid var(--border);
   }
 
-  .branch-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid rgba(30,37,48,0.5);
-    vertical-align: middle;
+  .expense-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(30,30,46,0.5);
   }
 
-  .branch-table tr:last-child td { border-bottom: none; }
+  .expense-table tr:last-child td { border-bottom: none; }
 
-  .branch-table tr:hover td { background: rgba(30,37,48,0.4); }
+  .expense-table tr:hover td { background: rgba(232,64,26,0.03); }
 
-  .branch-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-right: 8px;
-  }
-
-  .profit-bar-wrap {
-    width: 120px;
-    height: 4px;
-    background: var(--subtle);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .profit-bar { height: 100%; border-radius: 2px; transition: width 1s cubic-bezier(0.16,1,0.3,1); }
-
-  .badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
+  .expense-table .num {
     font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.5px;
+    text-align: right;
   }
 
-  .badge.positive { background: rgba(46,204,113,0.12); color: var(--green); }
-  .badge.negative { background: rgba(231,76,60,0.12); color: var(--red); }
+  .expense-table .red-num { color: var(--red); }
+  .expense-table .green-num { color: var(--green); }
 
-  /* Tabs */
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
+  /* Loader */
+  .loader {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(232,64,26,0.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-    width: fit-content;
+    border-radius: 20px;
+    padding: 36px;
+    width: 500px;
+    max-width: 90vw;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
   }
 
-  .tab-btn {
-    padding: 7px 16px;
-    border-radius: 7px;
-    font-size: 12px;
-    font-weight: 700;
+  .modal h3 { font-size: 20px; margin-bottom: 8px; }
+  .modal p  { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+  .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .btn-modal-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
     cursor: pointer;
-    background: none;
+    transition: all 0.2s;
+  }
+  .btn-modal-cancel:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-modal-confirm {
+    background: var(--accent);
     border: none;
-    color: var(--muted);
-    transition: all 0.15s;
-    font-family: 'Syne', sans-serif;
-    letter-spacing: 0.3px;
+    border-radius: 8px;
+    padding: 10px 24px;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
   }
+  .btn-modal-confirm:hover { background: var(--accent2); }
 
-  .tab-btn.active {
-    background: var(--card);
-    color: var(--text);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  }
-
-  /* Section view */
-  .section { display: none; }
-  .section.visible { display: block; }
-
-  /* Access denied */
-  .access-denied {
+  /* Footer */
+  .footer {
     text-align: center;
-    padding: 80px 40px;
+    padding: 24px;
+    font-size: 12px;
     color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
   }
-
-  .access-denied .icon { font-size: 48px; margin-bottom: 16px; }
-  .access-denied h3 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-  .access-denied p { font-size: 14px; }
 
   /* Responsive */
-  @media (max-width: 900px) {
-    .sidebar { transform: translateX(-100%); }
-    .main { margin-left: 0; padding: 20px; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .charts-row { grid-template-columns: 1fr; }
-  }
-
-  /* Utility */
-  .green { color: var(--green); }
-  .red   { color: var(--red); }
-  .gold  { color: var(--gold); }
-  .mono  { font-family: 'JetBrains Mono', monospace; }
-  .fade  { animation: fadeIn 0.4s ease both; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .header { padding: 0 16px; }
+    .generate-section { flex-direction: column; align-items: flex-start; }
+    .company-grid { grid-template-columns: 1fr 1fr; }
+    .branch-metrics { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════
-     LOGIN SCREEN
-══════════════════════════════════════════════ -->
-<div id="login-screen">
-  <div class="login-box fade">
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
     <div class="login-logo">
-      <span class="crab">🦞</span>
+      <div class="lobster">🦞</div>
       <h1>Ampera Raya Global</h1>
-      <p>PNL System · v1.0</p>
+      <p>PNL SYSTEM · V2.0</p>
     </div>
-    <div class="login-error" id="login-error">⛔ Email atau password tidak sah.</div>
-    <label>Email</label>
-    <input type="email" id="inp-email" placeholder="nama@ampera.com" autocomplete="username"/>
-    <label>Password</label>
-    <input type="password" id="inp-pw" placeholder="••••••••" autocomplete="current-password"/>
+    <div class="error-msg" id="errorMsg">Email atau password tidak tepat.</div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="nama@ampera.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password">
+    </div>
     <button class="btn-login" onclick="doLogin()">Log Masuk →</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════
-     MAIN APP
-══════════════════════════════════════════════ -->
-<div id="app">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="crab">🦞</div>
-      <h2>Ampera Raya</h2>
-      <p>PNL System</p>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="nav-section-title">Main</div>
-      <div class="nav-item active" onclick="showSection('overview')" id="nav-overview">
-        <span class="icon">📊</span> Overview
-      </div>
-      <div id="nav-company" class="nav-item" onclick="showSection('company')" style="display:none">
-        <span class="icon">🏢</span> Management Co.
-      </div>
-
-      <div class="nav-section-title">Cabang</div>
-      <div class="nav-item" id="nav-kw"    onclick="showSection('kw')"    style="display:none"><span class="icon">🔴</span> Kota Warisan</div>
-      <div class="nav-item" id="nav-kjg"   onclick="showSection('kjg')"   style="display:none"><span class="icon">🟢</span> Kajang</div>
-      <div class="nav-item" id="nav-s13"   onclick="showSection('s13')"   style="display:none"><span class="icon">🔵</span> Seksyen 13</div>
-      <div class="nav-item" id="nav-s7"    onclick="showSection('s7')"    style="display:none"><span class="icon">🟠</span> Seksyen 7</div>
-      <div class="nav-item" id="nav-klts"  onclick="showSection('klts')"  style="display:none"><span class="icon">🟡</span> KLTS</div>
-      <div class="nav-item" id="nav-dmnsr" onclick="showSection('dmnsr')" style="display:none"><span class="icon">🟣</span> Damansara</div>
-    </nav>
-    <div class="sidebar-user">
-      <div class="user-chip">
-        <div class="user-avatar" id="s-avatar"></div>
-        <div class="user-info">
-          <div class="user-name" id="s-name"></div>
-          <div class="user-role" id="s-role"></div>
-        </div>
-        <button class="logout-btn" onclick="doLogout()" title="Log Keluar">↩</button>
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="header">
+    <div class="header-left">
+      <span class="logo-icon">🦞</span>
+      <div>
+        <h1>Ampera Raya Global — PNL</h1>
+        <span id="headerMonth">Mac 2026</span>
       </div>
     </div>
-  </aside>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <span id="userName">Loading...</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
+    </div>
+  </header>
 
-  <!-- MAIN CONTENT -->
   <main class="main">
 
-    <!-- OVERVIEW -->
-    <div class="section visible fade" id="sec-overview">
-      <div class="page-header">
-        <div>
-          <div class="page-title">Dashboard PNL</div>
-          <div class="page-subtitle">Ringkasan kewangan semua entiti</div>
-        </div>
-        <div class="month-badge" id="month-label"></div>
-      </div>
+    <!-- Google Sheets Config -->
+    <div class="sheets-config" id="sheetsConfig">
+      <label>⚙️ Apps Script Web App</label>
+      <input type="text" id="webappUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec" style="max-width:480px">
+      <input type="text" id="webappToken" placeholder="Secret Token (sama dengan dalam .gs)" style="max-width:260px">
+      <button class="btn-save-config" onclick="saveConfig()">💾 Simpan</button>
+      <button class="btn-save-config" onclick="testConnection()" style="background:var(--surface2);margin-left:4px">🔌 Test</button>
+    </div>
 
-      <div class="kpi-grid">
-        <div class="kpi-card income">
-          <div class="kpi-label">Gross Income</div>
-          <div class="kpi-value green" id="kpi-income">—</div>
-          <div class="kpi-sub">Semua cabang</div>
-          <div class="kpi-icon">💰</div>
+    <!-- Generate Section -->
+    <div class="generate-section">
+      <div class="generate-info">
+        <h2>📊 Generate Laporan PNL</h2>
+        <p>Kira semula Income, Expenses & Net Profit untuk semua 7 entiti Ampera Raya Global</p>
+        <div class="last-updated" id="lastUpdated">Belum dijana — klik butang untuk mula</div>
+      </div>
+      <div class="generate-actions">
+        <button class="btn-refresh" onclick="loadFromSheets()" id="btnRefresh">
+          ⟳ Refresh Data
+        </button>
+        <button class="btn-generate" onclick="showGenerateModal()" id="btnGenerate">
+          ⚡ Generate PNL
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="status-banner" id="statusBanner"></div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card green">
+        <div class="stat-label">Total Net Profit (6 Cabang)</div>
+        <div class="stat-value green" id="totalNet">—</div>
+        <div class="stat-sub" id="totalNetPct">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Gross Income</div>
+        <div class="stat-value" id="totalIncome">—</div>
+        <div class="stat-sub">Sebelum tolak perbelanjaan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Perbelanjaan</div>
+        <div class="stat-value red" id="totalExpense">—</div>
+        <div class="stat-sub">Semua cabang gabungan</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Cabang Terbaik</div>
+        <div class="stat-value gold" id="bestBranch">—</div>
+        <div class="stat-sub" id="bestBranchNet">—</div>
+      </div>
+    </div>
+
+    <!-- Company Card -->
+    <div class="section-title">Management Company</div>
+    <div class="company-card" id="companyCard">
+      <div class="company-grid">
+        <div class="company-metric">
+          <div class="label">Gross Income</div>
+          <div class="value" id="compIncome">—</div>
         </div>
-        <div class="kpi-card expense">
-          <div class="kpi-label">Total Expenses</div>
-          <div class="kpi-value red" id="kpi-expense">—</div>
-          <div class="kpi-sub">Semua cabang</div>
-          <div class="kpi-icon">📤</div>
+        <div class="company-metric">
+          <div class="label">Total Perbelanjaan</div>
+          <div class="value" id="compExpense">—</div>
         </div>
-        <div class="kpi-card profit">
-          <div class="kpi-label">Net Profit</div>
-          <div class="kpi-value gold" id="kpi-profit">—</div>
-          <div class="kpi-sub">Semua cabang</div>
-          <div class="kpi-icon">📈</div>
+        <div class="company-metric">
+          <div class="label">Net Profit</div>
+          <div class="value green" id="compNet">—</div>
         </div>
-        <div class="kpi-card margin">
-          <div class="kpi-label">Avg Margin</div>
-          <div class="kpi-value" style="color:var(--blue)" id="kpi-margin">—</div>
-          <div class="kpi-sub">Keseluruhan</div>
-          <div class="kpi-icon">📉</div>
+        <div class="company-metric">
+          <div class="label">% Margin</div>
+          <div class="value green" id="compMargin">—</div>
         </div>
       </div>
+    </div>
 
-      <div class="charts-row">
-        <div class="card">
-          <div class="card-title"><span class="dot"></span> Net Profit per Cabang</div>
-          <canvas id="chart-branch"></canvas>
-        </div>
-        <div class="card">
-          <div class="card-title"><span class="dot"></span> Income vs Expense</div>
-          <canvas id="chart-compare"></canvas>
-        </div>
-      </div>
+    <!-- Branch Cards -->
+    <div class="section-title">6 Cabang Operasi</div>
+    <div class="branch-grid" id="branchGrid">
+      <!-- Generated by JS -->
+    </div>
 
-      <div class="card">
-        <div class="card-title"><span class="dot"></span> Ringkasan Semua Cabang</div>
-        <table class="branch-table" id="branch-table">
+    <!-- Expense Breakdown Table -->
+    <div class="expense-section" id="expenseSectionEl">
+      <div class="section-title">Ringkasan Semua Entiti</div>
+      <div class="expense-table">
+        <table id="summaryTable">
           <thead>
             <tr>
-              <th>Cabang</th>
-              <th>Gross Income</th>
-              <th>Total Expenses</th>
-              <th>Net Profit</th>
-              <th>Margin</th>
-              <th>Status</th>
-              <th>Bar</th>
+              <th>Entiti</th>
+              <th style="text-align:right">Gross Income</th>
+              <th style="text-align:right">Perbelanjaan</th>
+              <th style="text-align:right">Net Profit</th>
+              <th style="text-align:right">% Margin</th>
             </tr>
           </thead>
-          <tbody id="branch-tbody"></tbody>
+          <tbody id="summaryTableBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">
+              Klik "Generate PNL" atau "Refresh Data" untuk muat data
+            </td></tr>
+          </tbody>
         </table>
       </div>
     </div>
 
-    <!-- BRANCH SECTIONS (generated dynamically) -->
-    <div class="section fade" id="sec-company">
-      <div class="page-header">
-        <div><div class="page-title">🏢 Management Company</div><div class="page-subtitle">Laporan PNL Pengurusan</div></div>
-        <div class="month-badge" id="month-label-company"></div>
-      </div>
-      <div id="branch-detail-company"></div>
-    </div>
-
-    <div class="section fade" id="sec-kw">
-      <div class="page-header">
-        <div><div class="page-title">🔴 Kota Warisan</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-kw"></div>
-    </div>
-
-    <div class="section fade" id="sec-kjg">
-      <div class="page-header">
-        <div><div class="page-title">🟢 Kajang</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-kjg"></div>
-    </div>
-
-    <div class="section fade" id="sec-s13">
-      <div class="page-header">
-        <div><div class="page-title">🔵 Seksyen 13</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-s13"></div>
-    </div>
-
-    <div class="section fade" id="sec-s7">
-      <div class="page-header">
-        <div><div class="page-title">🟠 Seksyen 7</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-s7"></div>
-    </div>
-
-    <div class="section fade" id="sec-klts">
-      <div class="page-header">
-        <div><div class="page-title">🟡 KLTS</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-klts"></div>
-    </div>
-
-    <div class="section fade" id="sec-dmnsr">
-      <div class="page-header">
-        <div><div class="page-title">🟣 Damansara</div><div class="page-subtitle">Laporan PNL Cabang</div></div>
-      </div>
-      <div id="branch-detail-dmnsr"></div>
-    </div>
-
   </main>
+
+  <footer class="footer">
+    🦞 Ampera Raya Global Sdn Bhd · Sistem PNL V2.0 · Sulit — Untuk Kegunaan Dalaman Sahaja
+  </footer>
+</div>
+
+<!-- Generate Confirm Modal -->
+<div class="modal-overlay" id="generateModal">
+  <div class="modal">
+    <h3>⚡ Generate PNL Sekarang?</h3>
+    <p>Sistem akan mengira semula PNL untuk semua 7 entiti berdasarkan data dalam Google Sheets. Proses ini mengambil masa 10–30 saat.</p>
+    <div id="modalBody">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px">
+        <div style="margin-bottom:6px;color:var(--muted)">Tetapan semasa:</div>
+        <div id="modalConfig" style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--text)">—</div>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-modal-confirm" onclick="doGenerate()">⚡ Ya, Generate!</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════════
-// USER DATABASE — gantikan dengan data staf sebenar Ampera
-// Role: ceo | director | finance | manager
-// Branch: null (akses semua) | "KW" | "S13" | "KJG" | "KLTS" | "S7" | "DMNSR"
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// USER DATABASE — sama dengan Google Sheets USERS tab
+// ============================================================
 const USERS_DB = [
-  { id:1,  email:"ceo@ampera.com",       name:"CEO Ampera",       role:"ceo",      branch:null,    password:"Nasipadang2024",  avatar:"👑" },
-  { id:2,  email:"ainun@ampera.com",     name:"Ainun Rochman",    role:"director", branch:null,    password:"GantiPW2!",  avatar:"💼" },
-  { id:3,  email:"baizura@ampera.com",   name:"Nur Baizura",      role:"director", branch:null,    password:"GantiPW3!",  avatar:"💼" },
-  { id:4,  email:"farhan@ampera.com",    name:"Farhan Akmal",     role:"director", branch:null,    password:"GantiPW4!",  avatar:"💼" },
-  { id:5,  email:"baqir@ampera.com",     name:"Muhammad Baqir",   role:"finance",  branch:null,    password:"GantiPW5!",  avatar:"📊" },
-  { id:6,  email:"ikmal@ampera.com",     name:"Ikmal Syahmi",     role:"finance",  branch:null,    password:"GantiPW6!",  avatar:"📊" },
-  { id:7,  email:"nana@ampera.com",      name:"Nana Suherman",    role:"finance",  branch:null,    password:"GantiPW7!",  avatar:"📊" },
-  { id:8,  email:"adawiyah@ampera.com",  name:"Adawiyah",         role:"finance",  branch:null,    password:"GantiPW8!",  avatar:"📊" },
+  { id:1,  email:"ceo@ampera.com",      name:"CEO Ampera",       role:"ceo",      branch:null, password:"GantiPW1!", avatar:"👑" },
+  { id:2,  email:"ainun@ampera.com",     name:"Ainun Rochman",    role:"director", branch:null, password:"GantiPW2!", avatar:"💼" },
+  { id:3,  email:"baizura@ampera.com",   name:"Nur Baizura",      role:"director", branch:null, password:"GantiPW3!", avatar:"💼" },
+  { id:4,  email:"farhan@ampera.com",    name:"Farhan Akmal",     role:"director", branch:null, password:"GantiPW4!", avatar:"💼" },
+  { id:5,  email:"baqir@ampera.com",     name:"Muhammad Baqir",   role:"finance",  branch:null, password:"GantiPW5!", avatar:"📊" },
+  { id:6,  email:"ikmal@ampera.com",     name:"Ikmal Syahmi",     role:"finance",  branch:null, password:"GantiPW6!", avatar:"📊" },
+  { id:7,  email:"nana@ampera.com",      name:"Nana Suherman",    role:"finance",  branch:null, password:"GantiPW7!", avatar:"📊" },
+  { id:8,  email:"adawiyah@ampera.com",  name:"Adawiyah",         role:"finance",  branch:null, password:"GantiPW8!", avatar:"📊" },
   { id:9,  email:"mgr.kw@ampera.com",    name:"Manager KW",       role:"manager",  branch:"KW",    password:"GantiPW9!",  avatar:"🏪" },
   { id:10, email:"mgr.s13@ampera.com",   name:"Manager S13",      role:"manager",  branch:"S13",   password:"GantiPW10!", avatar:"🏪" },
   { id:11, email:"mgr.kjg@ampera.com",   name:"Manager Kajang",   role:"manager",  branch:"KJG",   password:"GantiPW11!", avatar:"🏪" },
@@ -729,349 +882,363 @@ const USERS_DB = [
   { id:14, email:"mgr.dmnsr@ampera.com", name:"Manager Damansara",role:"manager",  branch:"DMNSR", password:"GantiPW14!", avatar:"🏪" },
 ];
 
-// ═══════════════════════════════════════════════════════════
-// SAMPLE PNL DATA — gantikan dengan data dari Google Sheets API
-// ═══════════════════════════════════════════════════════════
-const PNL_DATA = {
-  month: "Mac 2026",
-  branches: [
-    { key:"company", name:"Management Co.", color:"#E8453C", income:320000, expense:185000, categories:[
-      {name:"Director Salary",  amount:85000},
-      {name:"Management Salary",amount:45000},
-      {name:"Rental Fee",       amount:22000},
-      {name:"Caruman",          amount:18000},
-      {name:"Operational",      amount:15000},
-    ]},
-    { key:"kw",      name:"Kota Warisan",   color:"#E74C3C", income:280000, expense:191760, categories:[
-      {name:"Operational",      amount:62000},
-      {name:"Salary",           amount:78000},
-      {name:"Rental Fee",       amount:28000},
-      {name:"Utility",          amount:15000},
-      {name:"Lain-lain",        amount:8760},
-    ]},
-    { key:"kjg",     name:"Kajang",         color:"#2ECC71", income:198000, expense:158743, categories:[
-      {name:"Operational",      amount:48000},
-      {name:"Salary",           amount:65000},
-      {name:"Rental Fee",       amount:22000},
-      {name:"Utility",          amount:12000},
-      {name:"Lain-lain",        amount:11743},
-    ]},
-    { key:"s13",     name:"Seksyen 13",     color:"#3498DB", income:245000, expense:178500, categories:[
-      {name:"Operational",      amount:55000},
-      {name:"Salary",           amount:72000},
-      {name:"Rental Fee",       amount:25000},
-      {name:"Utility",          amount:14000},
-      {name:"Lain-lain",        amount:12500},
-    ]},
-    { key:"s7",      name:"Seksyen 7",      color:"#E67E22", income:167000, expense:134200, categories:[
-      {name:"Operational",      amount:38000},
-      {name:"Salary",           amount:58000},
-      {name:"Rental Fee",       amount:20000},
-      {name:"Utility",          amount:10500},
-      {name:"Lain-lain",        amount:7700},
-    ]},
-    { key:"klts",    name:"KLTS",           color:"#F1C40F", income:312000, expense:224800, categories:[
-      {name:"Operational",      amount:72000},
-      {name:"Salary",           amount:88000},
-      {name:"Rental Fee",       amount:32000},
-      {name:"Utility",          amount:18500},
-      {name:"Lain-lain",        amount:14300},
-    ]},
-    { key:"dmnsr",   name:"Damansara",      color:"#9B59B6", income:195000, expense:152300, categories:[
-      {name:"Operational",      amount:45000},
-      {name:"Salary",           amount:62000},
-      {name:"Rental Fee",       amount:24000},
-      {name:"Utility",          amount:13000},
-      {name:"Lain-lain",        amount:8300},
-    ]},
-  ]
-};
+const BRANCH_CONFIG = [
+  { name:"Kota Warisan", key:"KW",   tab:"KW_RAW",    summaryRow:2 },
+  { name:"Kajang",       key:"KJG",  tab:"KJG_RAW",   summaryRow:3 },
+  { name:"Seksyen 13",   key:"S13",  tab:"S13_RAW",   summaryRow:4 },
+  { name:"Seksyen 7",    key:"S7",   tab:"S7_RAW",    summaryRow:5 },
+  { name:"KLTS",         key:"KLTS", tab:"KLTS_RAW",  summaryRow:6 },
+  { name:"Damansara",    key:"DMNSR",tab:"DMNSR_RAW", summaryRow:7 },
+];
 
-// ═══════════════════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════════════════
+// ============================================================
+// STATE
+// ============================================================
 let currentUser = null;
-let charts = {};
+let pnlData = null;
+let config = { webappUrl:'', webappToken:'' };
 
+// ============================================================
+// AUTH
+// ============================================================
 function doLogin() {
-  const email = document.getElementById('inp-email').value.trim().toLowerCase();
-  const pw    = document.getElementById('inp-pw').value;
-  const user  = USERS_DB.find(u => u.email.toLowerCase() === email && u.password === pw);
-  const errEl = document.getElementById('login-error');
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const pass  = document.getElementById('passInput').value;
+  const user  = USERS_DB.find(u => u.email.toLowerCase() === email && u.password === pass);
 
   if (!user) {
-    errEl.style.display = 'block';
-    document.getElementById('inp-pw').value = '';
+    document.getElementById('errorMsg').style.display = 'block';
+    document.getElementById('passInput').value = '';
     return;
   }
-
-  errEl.style.display = 'none';
+  document.getElementById('errorMsg').style.display = 'none';
   currentUser = user;
-  initApp();
+  sessionStorage.setItem('ampera_user', JSON.stringify(user));
+  showDashboard();
 }
-
-document.getElementById('inp-pw').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
-
-document.getElementById('inp-email').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('inp-pw').focus();
-});
 
 function doLogout() {
+  sessionStorage.removeItem('ampera_user');
   currentUser = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('inp-email').value = '';
-  document.getElementById('inp-pw').value = '';
-  // destroy charts
-  Object.values(charts).forEach(c => c && c.destroy());
-  charts = {};
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashboard').style.display   = 'none';
 }
 
-// ═══════════════════════════════════════════════════════════
-// APP INIT
-// ═══════════════════════════════════════════════════════════
-function canSeeAll() {
-  return ['ceo','director','finance'].includes(currentUser.role);
-}
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  document.getElementById('userName').textContent   = currentUser.name;
+  document.getElementById('userAvatar').textContent = currentUser.avatar;
 
-function initApp() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+  // Load saved config
+  const saved = localStorage.getItem('ampera_config');
+  if (saved) { config = JSON.parse(saved); }
+  document.getElementById('webappUrl').value   = config.webappUrl   || '';
+  document.getElementById('webappToken').value = config.webappToken || '';
 
-  // Sidebar user info
-  document.getElementById('s-avatar').textContent = currentUser.avatar;
-  document.getElementById('s-name').textContent   = currentUser.name;
-  document.getElementById('s-role').textContent   = currentUser.role.toUpperCase();
-
-  // Month labels
-  document.getElementById('month-label').textContent = PNL_DATA.month;
-  document.getElementById('month-label-company').textContent = PNL_DATA.month;
-
-  // Show/hide nav items based on role
-  const full = canSeeAll();
-  document.getElementById('nav-company').style.display = full ? 'flex' : 'none';
-
-  const branchNavMap = {kw:'KW', kjg:'KJG', s13:'S13', s7:'S7', klts:'KLTS', dmnsr:'DMNSR'};
-  Object.entries(branchNavMap).forEach(([key, bKey]) => {
-    const el = document.getElementById('nav-' + key);
-    const show = full || (currentUser.branch === bKey);
-    el.style.display = show ? 'flex' : 'none';
-  });
-
-  // Build branch detail pages
-  PNL_DATA.branches.forEach(b => buildBranchDetail(b));
-
-  // Render overview
-  renderOverview();
-  showSection('overview');
-}
-
-// ═══════════════════════════════════════════════════════════
-// OVERVIEW
-// ═══════════════════════════════════════════════════════════
-function fmt(n) {
-  return 'RM ' + n.toLocaleString('ms-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
-function renderOverview() {
-  const branches = canSeeAll()
-    ? PNL_DATA.branches
-    : PNL_DATA.branches.filter(b => b.key === currentUser.branch.toLowerCase());
-
-  const totalIncome  = branches.reduce((s,b) => s + b.income, 0);
-  const totalExpense = branches.reduce((s,b) => s + b.expense, 0);
-  const totalProfit  = totalIncome - totalExpense;
-  const avgMargin    = totalIncome > 0 ? (totalProfit / totalIncome * 100) : 0;
-
-  document.getElementById('kpi-income').textContent  = fmt(totalIncome);
-  document.getElementById('kpi-expense').textContent = fmt(totalExpense);
-  document.getElementById('kpi-profit').textContent  = fmt(totalProfit);
-  document.getElementById('kpi-margin').textContent  = avgMargin.toFixed(1) + '%';
-
-  // Branch table
-  const maxProfit = Math.max(...branches.map(b => b.income - b.expense));
-  const tbody = document.getElementById('branch-tbody');
-  tbody.innerHTML = '';
-  branches.forEach(b => {
-    const profit = b.income - b.expense;
-    const margin = b.income > 0 ? (profit / b.income * 100) : 0;
-    const barPct = maxProfit > 0 ? Math.max(0, profit / maxProfit * 100) : 0;
-    const isPos  = profit >= 0;
-    tbody.innerHTML += `
-      <tr>
-        <td><span class="branch-dot" style="background:${b.color}"></span><strong>${b.name}</strong></td>
-        <td class="mono green">${fmt(b.income)}</td>
-        <td class="mono red">${fmt(b.expense)}</td>
-        <td class="mono ${isPos?'gold':'red'}">${fmt(profit)}</td>
-        <td class="mono">${margin.toFixed(1)}%</td>
-        <td><span class="badge ${isPos?'positive':'negative'}">${isPos?'▲ UNTUNG':'▼ RUGI'}</span></td>
-        <td>
-          <div class="profit-bar-wrap">
-            <div class="profit-bar" style="width:${barPct}%;background:${b.color}"></div>
-          </div>
-        </td>
-      </tr>`;
-  });
-
-  // Charts
-  setTimeout(() => {
-    renderBranchChart(branches);
-    renderCompareChart(branches);
-  }, 50);
-}
-
-function renderBranchChart(branches) {
-  const ctx = document.getElementById('chart-branch').getContext('2d');
-  if (charts.branch) charts.branch.destroy();
-  charts.branch = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: branches.map(b => b.name.replace(' ','\n')),
-      datasets: [{
-        label: 'Net Profit (RM)',
-        data: branches.map(b => b.income - b.expense),
-        backgroundColor: branches.map(b => b.color + 'CC'),
-        borderColor: branches.map(b => b.color),
-        borderWidth: 1,
-        borderRadius: 6,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => 'RM ' + ctx.raw.toLocaleString('ms-MY', {minimumFractionDigits:2})
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: '#5A6478', font: {size:10} }, grid: { color: '#1E2530' } },
-        y: { ticks: { color: '#5A6478', callback: v => 'RM' + (v/1000).toFixed(0)+'k' }, grid: { color: '#1E2530' } }
-      }
-    }
-  });
-}
-
-function renderCompareChart(branches) {
-  const ctx = document.getElementById('chart-compare').getContext('2d');
-  if (charts.compare) charts.compare.destroy();
-  charts.compare = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: branches.map(b => b.name),
-      datasets: [
-        {
-          label: 'Income',
-          data: branches.map(b => b.income),
-          backgroundColor: 'rgba(46,204,113,0.6)',
-          borderColor: '#2ECC71',
-          borderWidth: 1,
-          borderRadius: 4,
-        },
-        {
-          label: 'Expense',
-          data: branches.map(b => b.expense),
-          backgroundColor: 'rgba(231,76,60,0.6)',
-          borderColor: '#E74C3C',
-          borderWidth: 1,
-          borderRadius: 4,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { labels: { color: '#5A6478', font:{size:11} } },
-        tooltip: {
-          callbacks: {
-            label: ctx => ctx.dataset.label + ': RM ' + ctx.raw.toLocaleString('ms-MY', {minimumFractionDigits:2})
-          }
-        }
-      },
-      scales: {
-        x: { ticks: { color: '#5A6478', font:{size:10} }, grid: { color: '#1E2530' } },
-        y: { ticks: { color: '#5A6478', callback: v => 'RM' + (v/1000).toFixed(0)+'k' }, grid: { color: '#1E2530' } }
-      }
-    }
-  });
-}
-
-// ═══════════════════════════════════════════════════════════
-// BRANCH DETAIL
-// ═══════════════════════════════════════════════════════════
-function buildBranchDetail(b) {
-  const profit = b.income - b.expense;
-  const margin = b.income > 0 ? (profit / b.income * 100) : 0;
-  const isPos  = profit >= 0;
-
-  const catRows = b.categories.map(c => `
-    <tr>
-      <td>${c.name}</td>
-      <td class="mono red">${fmt(c.amount)}</td>
-      <td>
-        <div class="profit-bar-wrap" style="width:160px">
-          <div class="profit-bar" style="width:${(c.amount/b.expense*100).toFixed(0)}%;background:${b.color}"></div>
-        </div>
-      </td>
-      <td class="mono" style="color:var(--muted)">${(c.amount/b.expense*100).toFixed(1)}%</td>
-    </tr>`).join('');
-
-  document.getElementById('branch-detail-' + b.key).innerHTML = `
-    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
-      <div class="kpi-card income">
-        <div class="kpi-label">Gross Income</div>
-        <div class="kpi-value green">${fmt(b.income)}</div>
-        <div class="kpi-sub">Bulan ini</div>
-        <div class="kpi-icon">💰</div>
-      </div>
-      <div class="kpi-card expense">
-        <div class="kpi-label">Total Expenses</div>
-        <div class="kpi-value red">${fmt(b.expense)}</div>
-        <div class="kpi-sub">Bulan ini</div>
-        <div class="kpi-icon">📤</div>
-      </div>
-      <div class="kpi-card profit">
-        <div class="kpi-label">Net Profit · ${margin.toFixed(1)}% margin</div>
-        <div class="kpi-value ${isPos?'gold':'red'}">${fmt(profit)}</div>
-        <div class="kpi-sub"><span class="badge ${isPos?'positive':'negative'}">${isPos?'▲ UNTUNG':'▼ RUGI'}</span></div>
-        <div class="kpi-icon">📈</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:${b.color}"></span> Breakdown Perbelanjaan</div>
-      <table class="branch-table">
-        <thead><tr><th>Kategori</th><th>Jumlah</th><th>Bar</th><th>%</th></tr></thead>
-        <tbody>${catRows}</tbody>
-      </table>
-    </div>`;
-}
-
-// ═══════════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════════
-function showSection(id) {
-  // Check access
-  if (!canSeeAll() && id !== 'overview') {
-    const branchMap = {kw:'KW', kjg:'KJG', s13:'S13', s7:'S7', klts:'KLTS', dmnsr:'DMNSR', company:'COMPANY'};
-    const target = branchMap[id];
-    if (target && currentUser.branch !== target) {
-      return; // silently deny
-    }
+  // Hide Sheets config for non-finance roles
+  if (!['ceo','director','finance'].includes(currentUser.role)) {
+    document.getElementById('sheetsConfig').style.display = 'none';
   }
 
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
-  const sec = document.getElementById('sec-' + id);
-  if (sec) sec.classList.add('visible');
-
-  const nav = document.getElementById('nav-' + id);
-  if (nav) nav.classList.add('active');
+  renderEmptyState();
 }
+
+// ============================================================
+// CONFIG
+// ============================================================
+function saveConfig() {
+  config.webappUrl   = document.getElementById('webappUrl').value.trim();
+  config.webappToken = document.getElementById('webappToken').value.trim();
+  localStorage.setItem('ampera_config', JSON.stringify(config));
+  showStatus('success', '✅ Konfigurasi disimpan!');
+}
+
+async function testConnection() {
+  if (!config.webappUrl || !config.webappToken) {
+    showStatus('error', '❌ Isi WebApp URL dan Token dahulu, kemudian klik Simpan.');
+    return;
+  }
+  showStatus('loading', '<span class="loader"></span>&nbsp; Menguji sambungan ke Apps Script...');
+  try {
+    const url = config.webappUrl + '?action=ping&token=' + encodeURIComponent(config.webappToken);
+    const resp = await fetch(url);
+    const json = await resp.json();
+    if (json.success) {
+      showStatus('success', '✅ Sambungan berjaya! Apps Script berjalan. ' + (json.timestamp || ''));
+    } else {
+      showStatus('error', '❌ ' + (json.error || 'Token salah atau Web App tidak aktif.'));
+    }
+  } catch(e) {
+    showStatus('error', '❌ Gagal sambung: ' + e.message + '. Semak URL dan pastikan Web App di-deploy sebagai "Anyone".');
+  }
+}
+
+// ============================================================
+// STATUS
+// ============================================================
+function showStatus(type, msg) {
+  const el = document.getElementById('statusBanner');
+  el.className = `status-banner ${type}`;
+  el.innerHTML = msg;
+}
+
+function hideStatus() {
+  document.getElementById('statusBanner').className = 'status-banner';
+}
+
+// ============================================================
+// GENERATE MODAL
+// ============================================================
+function showGenerateModal() {
+  const url = config.webappUrl;
+  document.getElementById('modalConfig').innerHTML = url 
+    ? `WebApp: ${url.substring(0,60)}...` 
+    : '⚠️ WebApp URL belum dikonfigurasi — akan guna data demo';
+  document.getElementById('generateModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('generateModal').classList.remove('open');
+}
+
+// ============================================================
+// GENERATE PNL
+// ============================================================
+async function doGenerate() {
+  closeModal();
+  const btn = document.getElementById('btnGenerate');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Mengira...';
+  showStatus('loading', '<span class="loader"></span>&nbsp; Sedang mengira PNL semua 7 entiti...');
+
+  try {
+    let data;
+    if (config.webappUrl && config.webappToken) {
+      data = await fetchFromWebApp();
+    } else {
+      // Guna demo data jika WebApp belum dikonfigurasi
+      await new Promise(r => setTimeout(r, 1500));
+      data = getDemoData();
+    }
+    
+    pnlData = data;
+    renderDashboard(data);
+    
+    const now = new Date().toLocaleString('ms-MY');
+    document.getElementById('lastUpdated').textContent = `Dijana pada: ${now}`;
+    showStatus('success', '✅ PNL berjaya dijana! Semua 7 entiti sudah dikira semula.');
+  } catch(e) {
+    showStatus('error', '❌ Ralat: ' + e.message + ' — Menggunakan data demo.');
+    pnlData = getDemoData();
+    renderDashboard(pnlData);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate PNL';
+}
+
+async function loadFromSheets() {
+  const btn = document.getElementById('btnRefresh');
+  btn.innerHTML = '<span class="loader"></span> Loading...';
+  showStatus('loading', '<span class="loader"></span>&nbsp; Memuat data dari Google Sheets...');
+  
+  try {
+    let data;
+    if (config.webappUrl && config.webappToken) {
+      data = await fetchFromWebApp();
+    } else {
+      await new Promise(r => setTimeout(r, 800));
+      data = getDemoData();
+    }
+    pnlData = data;
+    renderDashboard(data);
+    showStatus('success', '✅ Data berjaya dimuatkan!');
+  } catch(e) {
+    showStatus('error', '❌ ' + e.message + '. Menggunakan data demo.');
+    pnlData = getDemoData();
+    renderDashboard(pnlData);
+  }
+  btn.innerHTML = '⟳ Refresh Data';
+}
+
+// ============================================================
+// FETCH DATA DARI APPS SCRIPT WEB APP (PROXY)
+// ============================================================
+async function fetchFromWebApp() {
+  if (!config.webappUrl || !config.webappToken) {
+    throw new Error('WebApp URL atau Token belum dikonfigurasi');
+  }
+
+  const url = config.webappUrl
+    + '?action=summary'
+    + '&token=' + encodeURIComponent(config.webappToken);
+
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' dari Apps Script');
+
+  const json = await resp.json();
+  if (!json.success) throw new Error(json.error || 'Apps Script ralat');
+
+  // Kemaskini bulan dalam header
+  if (json.bulan) {
+    document.getElementById('headerMonth').textContent = json.bulan;
+  }
+
+  return {
+    company:  json.company,
+    branches: json.branches,
+    totals:   json.totals
+  };
+}
+
+// ============================================================
+// DEMO DATA (from uploaded spreadsheet)
+// ============================================================
+function getDemoData() {
+  return {
+    company: { name:'Company/Management', income:468630, expense:226871, net:241759, margin:51.6 },
+    branches: [
+      { name:'Kota Warisan', income:329883, expense:220268, net:109615, margin:33.2 },
+      { name:'Kajang',       income:262484, expense:181262, net:81221,  margin:30.9 },
+      { name:'Seksyen 13',   income:338954, expense:234107, net:104846, margin:30.9 },
+      { name:'Seksyen 7',    income:229793, expense:175050, net:54742,  margin:23.8 },
+      { name:'KLTS',         income:218842, expense:150714, net:68128,  margin:31.1 },
+      { name:'Damansara',    income:235681, expense:185605, net:50075,  margin:21.2 },
+    ],
+    totals: {
+      income:  1615437,
+      expense: 1167878,
+      net:     447559,
+    }
+  };
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderEmptyState() {
+  document.getElementById('totalNet').textContent     = '—';
+  document.getElementById('totalIncome').textContent  = '—';
+  document.getElementById('totalExpense').textContent = '—';
+  document.getElementById('bestBranch').textContent   = '—';
+  document.getElementById('compIncome').textContent   = '—';
+  document.getElementById('compExpense').textContent  = '—';
+  document.getElementById('compNet').textContent      = '—';
+  document.getElementById('compMargin').textContent   = '—';
+}
+
+function renderDashboard(data) {
+  const { company, branches, totals } = data;
+  const fmt = n => 'RM ' + Number(n).toLocaleString('ms-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtShort = n => 'RM ' + (n >= 1000000 ? (n/1000000).toFixed(2)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n.toFixed(0));
+
+  // Filter branches by role
+  let visibleBranches = branches;
+  if (currentUser.role === 'manager') {
+    const branchName = BRANCH_CONFIG.find(b => b.key === currentUser.branch)?.name;
+    visibleBranches = branches.filter(b => b.name === branchName);
+  }
+
+  // Stats
+  const branchNet = visibleBranches.reduce((s,b) => s+b.net, 0);
+  const branchInc = visibleBranches.reduce((s,b) => s+b.income, 0);
+  const branchExp = visibleBranches.reduce((s,b) => s+b.expense, 0);
+  
+  document.getElementById('totalNet').textContent     = fmt(branchNet);
+  document.getElementById('totalNetPct').textContent  = `Margin ${branchInc > 0 ? (branchNet/branchInc*100).toFixed(1) : 0}% dari total income`;
+  document.getElementById('totalIncome').textContent  = fmt(branchInc);
+  document.getElementById('totalExpense').textContent = fmt(branchExp);
+  
+  const best = [...visibleBranches].sort((a,b) => b.net - a.net)[0];
+  document.getElementById('bestBranch').textContent   = best?.name || '—';
+  document.getElementById('bestBranchNet').textContent = best ? `Net Profit: ${fmt(best.net)}` : '';
+
+  // Company (only for non-managers)
+  if (['ceo','director','finance'].includes(currentUser.role)) {
+    document.getElementById('compIncome').textContent  = fmt(company.income);
+    document.getElementById('compExpense').textContent = fmt(company.expense);
+    document.getElementById('compNet').textContent     = fmt(company.net);
+    document.getElementById('compMargin').textContent  = company.margin.toFixed(1) + '%';
+    document.getElementById('companyCard').style.display = '';
+  } else {
+    document.getElementById('companyCard').style.display = 'none';
+  }
+
+  // Branch cards
+  const grid = document.getElementById('branchGrid');
+  grid.innerHTML = visibleBranches.map(b => {
+    const margin = b.income > 0 ? (b.net/b.income*100) : 0;
+    const badgeClass = margin >= 25 ? 'badge-good' : margin >= 20 ? 'badge-avg' : 'badge-low';
+    return `
+    <div class="branch-card">
+      <div class="branch-header">
+        <div class="branch-name">${b.name}</div>
+        <div class="branch-badge ${badgeClass}">${margin.toFixed(1)}% margin</div>
+      </div>
+      <div class="branch-metrics">
+        <div class="metric">
+          <div class="metric-label">Income</div>
+          <div class="metric-value">${fmtShort(b.income)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Expenses</div>
+          <div class="metric-value red">−${fmtShort(b.expense)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Net Profit</div>
+          <div class="metric-value green">${fmtShort(b.net)}</div>
+        </div>
+      </div>
+      <div class="margin-bar">
+        <div class="margin-fill" style="width:${Math.min(margin*2, 100)}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Summary table
+  const tbody = document.getElementById('summaryTableBody');
+  const allRows = ['ceo','director','finance'].includes(currentUser.role)
+    ? [company, ...visibleBranches]
+    : visibleBranches;
+  
+  tbody.innerHTML = allRows.map(r => {
+    const m = r.income > 0 ? (r.net/r.income*100) : (r.margin || 0);
+    const isComp = r === company;
+    return `<tr>
+      <td style="${isComp ? 'font-weight:700;color:var(--accent2)' : ''}">${isComp ? '🦞 ' : ''}${r.name}</td>
+      <td class="num">${fmt(r.income)}</td>
+      <td class="num red-num">−${fmt(r.expense)}</td>
+      <td class="num green-num">${fmt(r.net)}</td>
+      <td class="num">${m.toFixed(1)}%</td>
+    </tr>`;
+  }).join('') + `
+  <tr style="font-weight:700;border-top:2px solid var(--border)">
+    <td>JUMLAH KESELURUHAN</td>
+    <td class="num">${fmt(totals.income)}</td>
+    <td class="num red-num">−${fmt(totals.expense)}</td>
+    <td class="num green-num">${fmt(totals.net)}</td>
+    <td class="num">${totals.income > 0 ? (totals.net/totals.income*100).toFixed(1) : 0}%</td>
+  </tr>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('ampera_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showDashboard();
+  }
+  
+  // Enter key for login
+  ['emailInput','passInput'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+});
 </script>
 </body>
 </html>
