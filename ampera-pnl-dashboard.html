@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ampera Raya Global — PNL Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #1e1e2e;
+    --accent: #e8401a;
+    --accent2: #ff6b35;
+    --green: #00d97e;
+    --red: #ff4757;
+    --gold: #ffd700;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --card-glow: 0 0 30px rgba(232,64,26,0.08);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---- Background ---- */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse 600px 400px at 10% 20%, rgba(232,64,26,0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 400px 300px at 90% 80%, rgba(255,107,53,0.04) 0%, transparent 70%);
+    pointer-events:none; z-index:0;
+  }
+
+  /* ---- LOGIN SCREEN ---- */
+  #loginScreen {
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background: var(--bg);
+    z-index:100;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 48px;
+    width: 420px;
+    max-width: 90vw;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6), var(--card-glow);
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .login-logo .lobster { font-size: 48px; margin-bottom: 8px; }
+
+  .login-logo h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .login-logo p {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  .form-group { margin-bottom: 16px; }
+
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .form-group input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus { border-color: var(--accent); }
+
+  .btn-login {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .btn-login:hover { background: var(--accent2); }
+  .btn-login:active { transform: scale(0.98); }
+
+  .error-msg {
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.3);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ---- MAIN DASHBOARD ---- */
+  #dashboard { display: none; position: relative; z-index: 1; }
+
+  /* Header */
+  .header {
+    background: rgba(17,17,24,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+
+  .header-left .logo-icon { font-size: 28px; }
+
+  .header-left h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .header-left span {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 6px 14px 6px 8px;
+    font-size: 13px;
+  }
+
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .btn-logout {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+  /* Main content */
+  .main { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* Generate PNL Section */
+  .generate-section {
+    background: linear-gradient(135deg, rgba(232,64,26,0.1), rgba(255,107,53,0.05));
+    border: 1px solid rgba(232,64,26,0.3);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .generate-info h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .generate-info p {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .generate-info .last-updated {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-top: 6px;
+  }
+
+  .generate-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+  .btn-generate {
+    background: var(--accent);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-generate:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn-generate:active { transform: scale(0.97); }
+  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-refresh {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Sheets Config */
+  .sheets-config {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sheets-config label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .sheets-config input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    outline: none;
+  }
+  .sheets-config input:focus { border-color: var(--accent); }
+
+  .btn-save-config {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-save-config:hover { border-color: var(--green); color: var(--green); }
+
+  /* Status Banner */
+  .status-banner {
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .status-banner.loading { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); display: flex; }
+  .status-banner.success { background: rgba(0,217,126,0.1); border: 1px solid rgba(0,217,126,0.3); color: var(--green); display: flex; }
+  .status-banner.error   { background: rgba(255,71,87,0.1);  border: 1px solid rgba(255,71,87,0.3);  color: var(--red);   display: flex; }
+
+  /* Stats cards */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--card-glow);
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.gold::before  { background: var(--gold); }
+
+  .stat-card:hover { transform: translateY(-2px); border-color: rgba(232,64,26,0.3); }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.gold  { color: var(--gold);  }
+  .stat-value.red   { color: var(--red);   }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Branch grid */
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .branch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .branch-card:hover {
+    border-color: rgba(232,64,26,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+
+  .branch-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .branch-name {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .branch-badge {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .badge-good { background: rgba(0,217,126,0.15); color: var(--green); }
+  .badge-avg  { background: rgba(255,215,0,0.15);  color: var(--gold);  }
+  .badge-low  { background: rgba(255,71,87,0.15);   color: var(--red);   }
+
+  .branch-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .metric { }
+
+  .metric-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .metric-value {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .metric-value.green { color: var(--green); }
+  .metric-value.red   { color: var(--red);   }
+
+  /* Progress bar */
+  .margin-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  .margin-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 1s ease;
+  }
+
+  /* Company card */
+  .company-card {
+    background: linear-gradient(135deg, var(--surface), rgba(22,22,31,0.8));
+    border: 1px solid rgba(232,64,26,0.2);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .company-card::before {
+    content: '🦞 COMPANY';
+    position: absolute;
+    top: -2px; right: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--surface);
+    padding: 4px 10px;
+    border: 1px solid rgba(232,64,26,0.3);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+  }
+
+  .company-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .company-metric { }
+  .company-metric .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .company-metric .value {
+    font-size: 22px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .company-metric .value.green { color: var(--green); }
+
+  /* Expense breakdown */
+  .expense-section { margin-bottom: 32px; }
+
+  .expense-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .expense-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .expense-table th {
+    background: var(--surface2);
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .expense-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(30,30,46,0.5);
+  }
+
+  .expense-table tr:last-child td { border-bottom: none; }
+
+  .expense-table tr:hover td { background: rgba(232,64,26,0.03); }
+
+  .expense-table .num {
+    font-family: 'JetBrains Mono', monospace;
+    text-align: right;
+  }
+
+  .expense-table .red-num { color: var(--red); }
+  .expense-table .green-num { color: var(--green); }
+
+  /* Loader */
+  .loader {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(232,64,26,0.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    width: 500px;
+    max-width: 90vw;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+
+  .modal h3 { font-size: 20px; margin-bottom: 8px; }
+  .modal p  { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+  .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+
+  .btn-modal-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-modal-cancel:hover { border-color: var(--text); color: var(--text); }
+
+  .btn-modal-confirm {
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    color: white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-modal-confirm:hover { background: var(--accent2); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .main { padding: 16px; }
+    .header { padding: 0 16px; }
+    .generate-section { flex-direction: column; align-items: flex-start; }
+    .company-grid { grid-template-columns: 1fr 1fr; }
+    .branch-metrics { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="lobster">🦞</div>
+      <h1>Ampera Raya Global</h1>
+      <p>PNL SYSTEM · V2.0</p>
+    </div>
+    <div class="error-msg" id="errorMsg">Email atau password tidak tepat.</div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="emailInput" placeholder="nama@ampera.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="passInput" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Log Masuk →</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="header">
+    <div class="header-left">
+      <span class="logo-icon">🦞</span>
+      <div>
+        <h1>Ampera Raya Global — PNL</h1>
+        <span id="headerMonth">Mac 2026</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-badge">
+        <div class="user-avatar" id="userAvatar">👤</div>
+        <span id="userName">Loading...</span>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Log Keluar</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Google Sheets Config -->
+    <div class="sheets-config" id="sheetsConfig">
+      <label>⚙️ Apps Script Web App</label>
+      <input type="text" id="webappUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec" style="max-width:480px">
+      <input type="text" id="webappToken" placeholder="Secret Token (sama dengan dalam .gs)" style="max-width:260px">
+      <button class="btn-save-config" onclick="saveConfig()">💾 Simpan</button>
+      <button class="btn-save-config" onclick="testConnection()" style="background:var(--surface2);margin-left:4px">🔌 Test</button>
+    </div>
+
+    <!-- Generate Section -->
+    <div class="generate-section">
+      <div class="generate-info">
+        <h2>📊 Generate Laporan PNL</h2>
+        <p>Kira semula Income, Expenses & Net Profit untuk semua 7 entiti Ampera Raya Global</p>
+        <div class="last-updated" id="lastUpdated">Belum dijana — klik butang untuk mula</div>
+      </div>
+      <div class="generate-actions">
+        <button class="btn-refresh" onclick="loadFromSheets()" id="btnRefresh">
+          ⟳ Refresh Data
+        </button>
+        <button class="btn-generate" onclick="showGenerateModal()" id="btnGenerate">
+          ⚡ Generate PNL
+        </button>
+      </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="status-banner" id="statusBanner"></div>
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card green">
+        <div class="stat-label">Total Net Profit (6 Cabang)</div>
+        <div class="stat-value green" id="totalNet">—</div>
+        <div class="stat-sub" id="totalNetPct">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Gross Income</div>
+        <div class="stat-value" id="totalIncome">—</div>
+        <div class="stat-sub">Sebelum tolak perbelanjaan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Perbelanjaan</div>
+        <div class="stat-value red" id="totalExpense">—</div>
+        <div class="stat-sub">Semua cabang gabungan</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Cabang Terbaik</div>
+        <div class="stat-value gold" id="bestBranch">—</div>
+        <div class="stat-sub" id="bestBranchNet">—</div>
+      </div>
+    </div>
+
+    <!-- Company Card -->
+    <div class="section-title">Management Company</div>
+    <div class="company-card" id="companyCard">
+      <div class="company-grid">
+        <div class="company-metric">
+          <div class="label">Gross Income</div>
+          <div class="value" id="compIncome">—</div>
+        </div>
+        <div class="company-metric">
+          <div class="label">Total Perbelanjaan</div>
+          <div class="value" id="compExpense">—</div>
+        </div>
+        <div class="company-metric">
+          <div class="label">Net Profit</div>
+          <div class="value green" id="compNet">—</div>
+        </div>
+        <div class="company-metric">
+          <div class="label">% Margin</div>
+          <div class="value green" id="compMargin">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Branch Cards -->
+    <div class="section-title">6 Cabang Operasi</div>
+    <div class="branch-grid" id="branchGrid">
+      <!-- Generated by JS -->
+    </div>
+
+    <!-- Expense Breakdown Table -->
+    <div class="expense-section" id="expenseSectionEl">
+      <div class="section-title">Ringkasan Semua Entiti</div>
+      <div class="expense-table">
+        <table id="summaryTable">
+          <thead>
+            <tr>
+              <th>Entiti</th>
+              <th style="text-align:right">Gross Income</th>
+              <th style="text-align:right">Perbelanjaan</th>
+              <th style="text-align:right">Net Profit</th>
+              <th style="text-align:right">% Margin</th>
+            </tr>
+          </thead>
+          <tbody id="summaryTableBody">
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">
+              Klik "Generate PNL" atau "Refresh Data" untuk muat data
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="footer">
+    🦞 Ampera Raya Global Sdn Bhd · Sistem PNL V2.0 · Sulit — Untuk Kegunaan Dalaman Sahaja
+  </footer>
+</div>
+
+<!-- Generate Confirm Modal -->
+<div class="modal-overlay" id="generateModal">
+  <div class="modal">
+    <h3>⚡ Generate PNL Sekarang?</h3>
+    <p>Sistem akan mengira semula PNL untuk semua 7 entiti berdasarkan data dalam Google Sheets. Proses ini mengambil masa 10–30 saat.</p>
+    <div id="modalBody">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:20px;font-size:13px">
+        <div style="margin-bottom:6px;color:var(--muted)">Tetapan semasa:</div>
+        <div id="modalConfig" style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--text)">—</div>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn-modal-cancel" onclick="closeModal()">Batal</button>
+      <button class="btn-modal-confirm" onclick="doGenerate()">⚡ Ya, Generate!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// USER DATABASE — sama dengan Google Sheets USERS tab
+// ============================================================
+const USERS_DB = [
+  { id:1,  email:"ceo@ampera.com",      name:"CEO Ampera",       role:"ceo",      branch:null, password:"GantiPW1!", avatar:"👑" },
+  { id:2,  email:"ainun@ampera.com",     name:"Ainun Rochman",    role:"director", branch:null, password:"GantiPW2!", avatar:"💼" },
+  { id:3,  email:"baizura@ampera.com",   name:"Nur Baizura",      role:"director", branch:null, password:"GantiPW3!", avatar:"💼" },
+  { id:4,  email:"farhan@ampera.com",    name:"Farhan Akmal",     role:"director", branch:null, password:"GantiPW4!", avatar:"💼" },
+  { id:5,  email:"baqir@ampera.com",     name:"Muhammad Baqir",   role:"finance",  branch:null, password:"GantiPW5!", avatar:"📊" },
+  { id:6,  email:"ikmal@ampera.com",     name:"Ikmal Syahmi",     role:"finance",  branch:null, password:"GantiPW6!", avatar:"📊" },
+  { id:7,  email:"nana@ampera.com",      name:"Nana Suherman",    role:"finance",  branch:null, password:"GantiPW7!", avatar:"📊" },
+  { id:8,  email:"adawiyah@ampera.com",  name:"Adawiyah",         role:"finance",  branch:null, password:"GantiPW8!", avatar:"📊" },
+  { id:9,  email:"mgr.kw@ampera.com",    name:"Manager KW",       role:"manager",  branch:"KW",    password:"GantiPW9!",  avatar:"🏪" },
+  { id:10, email:"mgr.s13@ampera.com",   name:"Manager S13",      role:"manager",  branch:"S13",   password:"GantiPW10!", avatar:"🏪" },
+  { id:11, email:"mgr.kjg@ampera.com",   name:"Manager Kajang",   role:"manager",  branch:"KJG",   password:"GantiPW11!", avatar:"🏪" },
+  { id:12, email:"mgr.klts@ampera.com",  name:"Manager KLTS",     role:"manager",  branch:"KLTS",  password:"GantiPW12!", avatar:"🏪" },
+  { id:13, email:"mgr.s7@ampera.com",    name:"Manager S7",       role:"manager",  branch:"S7",    password:"GantiPW13!", avatar:"🏪" },
+  { id:14, email:"mgr.dmnsr@ampera.com", name:"Manager Damansara",role:"manager",  branch:"DMNSR", password:"GantiPW14!", avatar:"🏪" },
+];
+
+const BRANCH_CONFIG = [
+  { name:"Kota Warisan", key:"KW",   tab:"KW_RAW",    summaryRow:2 },
+  { name:"Kajang",       key:"KJG",  tab:"KJG_RAW",   summaryRow:3 },
+  { name:"Seksyen 13",   key:"S13",  tab:"S13_RAW",   summaryRow:4 },
+  { name:"Seksyen 7",    key:"S7",   tab:"S7_RAW",    summaryRow:5 },
+  { name:"KLTS",         key:"KLTS", tab:"KLTS_RAW",  summaryRow:6 },
+  { name:"Damansara",    key:"DMNSR",tab:"DMNSR_RAW", summaryRow:7 },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentUser = null;
+let pnlData = null;
+let config = { webappUrl:'', webappToken:'' };
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin() {
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const pass  = document.getElementById('passInput').value;
+  const user  = USERS_DB.find(u => u.email.toLowerCase() === email && u.password === pass);
+
+  if (!user) {
+    document.getElementById('errorMsg').style.display = 'block';
+    document.getElementById('passInput').value = '';
+    return;
+  }
+  document.getElementById('errorMsg').style.display = 'none';
+  currentUser = user;
+  sessionStorage.setItem('ampera_user', JSON.stringify(user));
+  showDashboard();
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ampera_user');
+  currentUser = null;
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashboard').style.display   = 'none';
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  document.getElementById('userName').textContent   = currentUser.name;
+  document.getElementById('userAvatar').textContent = currentUser.avatar;
+
+  // Load saved config
+  const saved = localStorage.getItem('ampera_config');
+  if (saved) { config = JSON.parse(saved); }
+  document.getElementById('webappUrl').value   = config.webappUrl   || '';
+  document.getElementById('webappToken').value = config.webappToken || '';
+
+  // Hide Sheets config for non-finance roles
+  if (!['ceo','director','finance'].includes(currentUser.role)) {
+    document.getElementById('sheetsConfig').style.display = 'none';
+  }
+
+  renderEmptyState();
+}
+
+// ============================================================
+// CONFIG
+// ============================================================
+function saveConfig() {
+  config.webappUrl   = document.getElementById('webappUrl').value.trim();
+  config.webappToken = document.getElementById('webappToken').value.trim();
+  localStorage.setItem('ampera_config', JSON.stringify(config));
+  showStatus('success', '✅ Konfigurasi disimpan!');
+}
+
+async function testConnection() {
+  if (!config.webappUrl || !config.webappToken) {
+    showStatus('error', '❌ Isi WebApp URL dan Token dahulu, kemudian klik Simpan.');
+    return;
+  }
+  showStatus('loading', '<span class="loader"></span>&nbsp; Menguji sambungan ke Apps Script...');
+  try {
+    const url = config.webappUrl + '?action=ping&token=' + encodeURIComponent(config.webappToken);
+    const resp = await fetch(url);
+    const json = await resp.json();
+    if (json.success) {
+      showStatus('success', '✅ Sambungan berjaya! Apps Script berjalan. ' + (json.timestamp || ''));
+    } else {
+      showStatus('error', '❌ ' + (json.error || 'Token salah atau Web App tidak aktif.'));
+    }
+  } catch(e) {
+    showStatus('error', '❌ Gagal sambung: ' + e.message + '. Semak URL dan pastikan Web App di-deploy sebagai "Anyone".');
+  }
+}
+
+// ============================================================
+// STATUS
+// ============================================================
+function showStatus(type, msg) {
+  const el = document.getElementById('statusBanner');
+  el.className = `status-banner ${type}`;
+  el.innerHTML = msg;
+}
+
+function hideStatus() {
+  document.getElementById('statusBanner').className = 'status-banner';
+}
+
+// ============================================================
+// GENERATE MODAL
+// ============================================================
+function showGenerateModal() {
+  const url = config.webappUrl;
+  document.getElementById('modalConfig').innerHTML = url 
+    ? `WebApp: ${url.substring(0,60)}...` 
+    : '⚠️ WebApp URL belum dikonfigurasi — akan guna data demo';
+  document.getElementById('generateModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('generateModal').classList.remove('open');
+}
+
+// ============================================================
+// GENERATE PNL
+// ============================================================
+async function doGenerate() {
+  closeModal();
+  const btn = document.getElementById('btnGenerate');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span> Mengira...';
+  showStatus('loading', '<span class="loader"></span>&nbsp; Sedang mengira PNL semua 7 entiti...');
+
+  try {
+    let data;
+    if (config.webappUrl && config.webappToken) {
+      data = await fetchFromWebApp();
+    } else {
+      // Guna demo data jika WebApp belum dikonfigurasi
+      await new Promise(r => setTimeout(r, 1500));
+      data = getDemoData();
+    }
+    
+    pnlData = data;
+    renderDashboard(data);
+    
+    const now = new Date().toLocaleString('ms-MY');
+    document.getElementById('lastUpdated').textContent = `Dijana pada: ${now}`;
+    showStatus('success', '✅ PNL berjaya dijana! Semua 7 entiti sudah dikira semula.');
+  } catch(e) {
+    showStatus('error', '❌ Ralat: ' + e.message + ' — Menggunakan data demo.');
+    pnlData = getDemoData();
+    renderDashboard(pnlData);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate PNL';
+}
+
+async function loadFromSheets() {
+  const btn = document.getElementById('btnRefresh');
+  btn.innerHTML = '<span class="loader"></span> Loading...';
+  showStatus('loading', '<span class="loader"></span>&nbsp; Memuat data dari Google Sheets...');
+  
+  try {
+    let data;
+    if (config.webappUrl && config.webappToken) {
+      data = await fetchFromWebApp();
+    } else {
+      await new Promise(r => setTimeout(r, 800));
+      data = getDemoData();
+    }
+    pnlData = data;
+    renderDashboard(data);
+    showStatus('success', '✅ Data berjaya dimuatkan!');
+  } catch(e) {
+    showStatus('error', '❌ ' + e.message + '. Menggunakan data demo.');
+    pnlData = getDemoData();
+    renderDashboard(pnlData);
+  }
+  btn.innerHTML = '⟳ Refresh Data';
+}
+
+// ============================================================
+// FETCH DATA DARI APPS SCRIPT WEB APP (PROXY)
+// ============================================================
+async function fetchFromWebApp() {
+  if (!config.webappUrl || !config.webappToken) {
+    throw new Error('WebApp URL atau Token belum dikonfigurasi');
+  }
+
+  const url = config.webappUrl
+    + '?action=summary'
+    + '&token=' + encodeURIComponent(config.webappToken);
+
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' dari Apps Script');
+
+  const json = await resp.json();
+  if (!json.success) throw new Error(json.error || 'Apps Script ralat');
+
+  // Kemaskini bulan dalam header
+  if (json.bulan) {
+    document.getElementById('headerMonth').textContent = json.bulan;
+  }
+
+  return {
+    company:  json.company,
+    branches: json.branches,
+    totals:   json.totals
+  };
+}
+
+// ============================================================
+// DEMO DATA (from uploaded spreadsheet)
+// ============================================================
+function getDemoData() {
+  return {
+    company: { name:'Company/Management', income:468630, expense:226871, net:241759, margin:51.6 },
+    branches: [
+      { name:'Kota Warisan', income:329883, expense:220268, net:109615, margin:33.2 },
+      { name:'Kajang',       income:262484, expense:181262, net:81221,  margin:30.9 },
+      { name:'Seksyen 13',   income:338954, expense:234107, net:104846, margin:30.9 },
+      { name:'Seksyen 7',    income:229793, expense:175050, net:54742,  margin:23.8 },
+      { name:'KLTS',         income:218842, expense:150714, net:68128,  margin:31.1 },
+      { name:'Damansara',    income:235681, expense:185605, net:50075,  margin:21.2 },
+    ],
+    totals: {
+      income:  1615437,
+      expense: 1167878,
+      net:     447559,
+    }
+  };
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function renderEmptyState() {
+  document.getElementById('totalNet').textContent     = '—';
+  document.getElementById('totalIncome').textContent  = '—';
+  document.getElementById('totalExpense').textContent = '—';
+  document.getElementById('bestBranch').textContent   = '—';
+  document.getElementById('compIncome').textContent   = '—';
+  document.getElementById('compExpense').textContent  = '—';
+  document.getElementById('compNet').textContent      = '—';
+  document.getElementById('compMargin').textContent   = '—';
+}
+
+function renderDashboard(data) {
+  const { company, branches, totals } = data;
+  const fmt = n => 'RM ' + Number(n).toLocaleString('ms-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const fmtShort = n => 'RM ' + (n >= 1000000 ? (n/1000000).toFixed(2)+'M' : n >= 1000 ? (n/1000).toFixed(1)+'K' : n.toFixed(0));
+
+  // Filter branches by role
+  let visibleBranches = branches;
+  if (currentUser.role === 'manager') {
+    const branchName = BRANCH_CONFIG.find(b => b.key === currentUser.branch)?.name;
+    visibleBranches = branches.filter(b => b.name === branchName);
+  }
+
+  // Stats
+  const branchNet = visibleBranches.reduce((s,b) => s+b.net, 0);
+  const branchInc = visibleBranches.reduce((s,b) => s+b.income, 0);
+  const branchExp = visibleBranches.reduce((s,b) => s+b.expense, 0);
+  
+  document.getElementById('totalNet').textContent     = fmt(branchNet);
+  document.getElementById('totalNetPct').textContent  = `Margin ${branchInc > 0 ? (branchNet/branchInc*100).toFixed(1) : 0}% dari total income`;
+  document.getElementById('totalIncome').textContent  = fmt(branchInc);
+  document.getElementById('totalExpense').textContent = fmt(branchExp);
+  
+  const best = [...visibleBranches].sort((a,b) => b.net - a.net)[0];
+  document.getElementById('bestBranch').textContent   = best?.name || '—';
+  document.getElementById('bestBranchNet').textContent = best ? `Net Profit: ${fmt(best.net)}` : '';
+
+  // Company (only for non-managers)
+  if (['ceo','director','finance'].includes(currentUser.role)) {
+    document.getElementById('compIncome').textContent  = fmt(company.income);
+    document.getElementById('compExpense').textContent = fmt(company.expense);
+    document.getElementById('compNet').textContent     = fmt(company.net);
+    document.getElementById('compMargin').textContent  = company.margin.toFixed(1) + '%';
+    document.getElementById('companyCard').style.display = '';
+  } else {
+    document.getElementById('companyCard').style.display = 'none';
+  }
+
+  // Branch cards
+  const grid = document.getElementById('branchGrid');
+  grid.innerHTML = visibleBranches.map(b => {
+    const margin = b.income > 0 ? (b.net/b.income*100) : 0;
+    const badgeClass = margin >= 25 ? 'badge-good' : margin >= 20 ? 'badge-avg' : 'badge-low';
+    return `
+    <div class="branch-card">
+      <div class="branch-header">
+        <div class="branch-name">${b.name}</div>
+        <div class="branch-badge ${badgeClass}">${margin.toFixed(1)}% margin</div>
+      </div>
+      <div class="branch-metrics">
+        <div class="metric">
+          <div class="metric-label">Income</div>
+          <div class="metric-value">${fmtShort(b.income)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Expenses</div>
+          <div class="metric-value red">−${fmtShort(b.expense)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Net Profit</div>
+          <div class="metric-value green">${fmtShort(b.net)}</div>
+        </div>
+      </div>
+      <div class="margin-bar">
+        <div class="margin-fill" style="width:${Math.min(margin*2, 100)}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Summary table
+  const tbody = document.getElementById('summaryTableBody');
+  const allRows = ['ceo','director','finance'].includes(currentUser.role)
+    ? [company, ...visibleBranches]
+    : visibleBranches;
+  
+  tbody.innerHTML = allRows.map(r => {
+    const m = r.income > 0 ? (r.net/r.income*100) : (r.margin || 0);
+    const isComp = r === company;
+    return `<tr>
+      <td style="${isComp ? 'font-weight:700;color:var(--accent2)' : ''}">${isComp ? '🦞 ' : ''}${r.name}</td>
+      <td class="num">${fmt(r.income)}</td>
+      <td class="num red-num">−${fmt(r.expense)}</td>
+      <td class="num green-num">${fmt(r.net)}</td>
+      <td class="num">${m.toFixed(1)}%</td>
+    </tr>`;
+  }).join('') + `
+  <tr style="font-weight:700;border-top:2px solid var(--border)">
+    <td>JUMLAH KESELURUHAN</td>
+    <td class="num">${fmt(totals.income)}</td>
+    <td class="num red-num">−${fmt(totals.expense)}</td>
+    <td class="num green-num">${fmt(totals.net)}</td>
+    <td class="num">${totals.income > 0 ? (totals.net/totals.income*100).toFixed(1) : 0}%</td>
+  </tr>`;
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('ampera_user');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    showDashboard();
+  }
+  
+  // Enter key for login
+  ['emailInput','passInput'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+});
+</script>
+</body>
+</html>
