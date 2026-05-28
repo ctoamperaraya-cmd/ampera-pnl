@@ -1015,19 +1015,27 @@ async function doGenerate() {
   try {
     let data;
     if (config.webappUrl && config.webappToken) {
+      // Step 1: Trigger generate (kira semula dari RAW tabs → update SUMMARY)
+      showStatus('loading', '<span class="loader"></span>&nbsp; Mengira PNL dari RAW data...');
+      const genUrl = config.webappUrl + '?action=generate&token=' + encodeURIComponent(config.webappToken);
+      const genResp = await fetch(genUrl);
+      const genJson = await genResp.json();
+      if (!genJson.success) throw new Error(genJson.error || 'Generate gagal');
+
+      // Step 2: Fetch data terkini dari SUMMARY
+      showStatus('loading', '<span class="loader"></span>&nbsp; Memuat data terkini...');
       data = await fetchFromWebApp();
     } else {
-      // Guna demo data jika WebApp belum dikonfigurasi
       await new Promise(r => setTimeout(r, 1500));
       data = getDemoData();
     }
-    
+
     pnlData = data;
     renderDashboard(data);
-    
+
     const now = new Date().toLocaleString('ms-MY');
     document.getElementById('lastUpdated').textContent = `Dijana pada: ${now}`;
-    showStatus('success', '✅ PNL berjaya dijana! Semua 7 entiti sudah dikira semula.');
+    showStatus('success', '✅ PNL berjaya dijana! Semua 7 entiti sudah dikira semula dari data RAW.');
   } catch(e) {
     showStatus('error', '❌ Ralat: ' + e.message + ' — Menggunakan data demo.');
     pnlData = getDemoData();
